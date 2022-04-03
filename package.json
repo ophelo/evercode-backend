@@ -3,7 +3,10 @@
   "version": "0.0.1",
   "description": "evercode backend",
   "main": "index.js",
-  "repository": "https://github.com/ophelo/evercode-backend",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ophelo/evercode-backend"
+  },
   "author": "Davide Frageri <davide.frag@gmail.com>",
   "license": "MIT",
   "private": false,
@@ -12,8 +15,9 @@
     "start": "node index.js"
   },
   "keywords": [
-    "example",
-    "heroku"
+    "node",
+    "heroku",
+    "express"
   ],
   "dependencies": {
     "express": "^4.17.3"
