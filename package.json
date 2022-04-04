@@ -2,7 +2,7 @@
   "name": "evercode-backend",
   "version": "0.0.1",
   "description": "evercode backend",
-  "main": "index.js",
+  "main": "server.js",
   "repository": {
     "type": "git",
     "url": "https://github.com/ophelo/evercode-backend"
@@ -11,8 +11,13 @@
   "license": "MIT",
   "private": false,
   "scripts": {
+    "lint:check": "eslint . ",
+    "lint": "eslint --fix . ",
+    "prettier:check": "prettier --check .",
+    "prettier": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js"
+    "dev": "NODE_ENV=development node server.js",
+    "start": "NODE_ENV=production node server.js"
   },
   "keywords": [
     "node",
@@ -20,9 +25,21 @@
     "express"
   ],
   "dependencies": {
-    "express": "^4.17.3"
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.0",
+    "express": "^4.17.3",
+    "mongodb": "^4.4.1",
+    "mongoose": "^6.2.9"
   },
   "engines": {
     "node": "16.14.2"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.4",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0",
+    "prettier": "2.6.2"
   }
 }
