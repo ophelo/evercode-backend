@@ -6,38 +6,28 @@ const { User, Profile, FriendRequest} = require('./model');
 // The router will be added as a middleware and will take control of requests starting with path /listings.
 const userRoutes = express.Router()
 
-// This section will help you get a list of all the documents.
-userRoutes.get('/users', async (req, res) => {
-  // if (!req.oidc.isAuthenticated()) {
-  //   res.json('Unauthorized');
-  //   return
-  // }
-  const users = await User.find({})
-  res.json(users)
-})
-
-userRoutes.get('/profile', async (req, res) => {
-  if (!req.oidc.isAuthenticated()) {
-    res.json('Unauthorized');
-    return
+userRoutes.post('/firstConfig', async (req, res, next) => {
+  const user_obj = req.auth;
+  try {
+    const user = await User.create({
+      email: user_obj["https://evercode.com/email"],
+      name: user_obj.name,
+      age: 12,
+    })
+    await user.save();
+    const profile = await Profile.create({user: user._id})
+    console.log(profile);
+    console.log(user);
+    return res.status(200).json({ "status": "ok" });
+  } catch(err) {
+    next(err);
   }
-  res.json(req.oidc.user);
+  
 })
 
-userRoutes.get('/check_profile', async (req, res) => {
-  // if (!req.oidc.isAuthenticated()) {
-  //   res.json('Unauthorized');
-  //   return
-  // }
-  const profile = await Profile.find({user: '62707738a27bc209faeb2126'});
-  res.json(profile[0]);
-})
-
-userRoutes.get('/send_friend_request', async (req,res) => {
-  if (!req.oidc.isAuthenticated()) {
-    return res.json('Unauthorized');
-  }
-  const user = await User.findById(id='627076df5c01795d36cfbc96');
+userRoutes.post('/send_friend_request', async (req,res) => {
+  const user_obj = req.auth;
+  const user = await User.find({email: user_obj.email});
   //const profile = await Profile.findById(id='62707701571ff275412ab4b5');
   const friend_profile = await Profile.find({user: '62707738a27bc209faeb2126'});
   const friend_request = await FriendRequest.create({sender: user._id})
@@ -48,10 +38,8 @@ userRoutes.get('/send_friend_request', async (req,res) => {
 })
 
 userRoutes.get('/add_friend', async (req, res) => {
-  if (!req.oidc.isAuthenticated()) {
-    res.json('Unauthorized');
-    return
-  }
+  const user_obj = req.auth;
+  const user = await User.find({email: user_obj.email});
   const profile = await Profile.find({user: '62707738a27bc209faeb2126'});
   const requests = profile[0].friend_requests;
   requests.forEach((request) => {
@@ -65,18 +53,6 @@ userRoutes.get('/add_friend', async (req, res) => {
   });
   return res.json(profile[0]); 
   
-})
-
-// This section will help you get a list of all the documents.
-userRoutes.route('/addUser').get(async function (req, res) {
-  console.log("Entro nell'api: ");
-  const user = await User.create({
-    name: 'prova',
-    age: 12,
-  })
-  await user.save();
-  const profile = await Profile.create({user: user._id})
-  return res.json(profile);
 })
 
 module.exports = userRoutes

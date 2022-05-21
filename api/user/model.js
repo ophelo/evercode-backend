@@ -4,6 +4,7 @@ const _ = require('underscore');
 const Schema = mongoose.Schema;
 
 const userSchema = new mongoose.Schema({
+  email: { type: String, required: true, unique: true },
   name: { type: String },
   age: { type: Number }
 })
@@ -17,7 +18,7 @@ const friendRequestSchema = new mongoose.Schema({
 
 const profileSchema = new mongoose.Schema({
   name: { type: String},
-  user: { type: Schema.Types.ObjectId, required: true, ref: 'User'},
+  user: { type: String, required: true, ref: 'User'},
   friends: [
     { type: Schema.Types.ObjectId, ref: 'User', unique: true},
   ],
