@@ -1,5 +1,6 @@
 const express = require('express');
 const { User, Profile, FriendRequest} = require('./model');
+const mongoose = require('mongoose')
 
 // recordRoutes is an instance of the express router.
 // We use it to define our routes.
@@ -7,15 +8,21 @@ const { User, Profile, FriendRequest} = require('./model');
 const userRoutes = express.Router()
 
 userRoutes.post('/firstConfig', async (req, res, next) => {
+  //mongoose.connection.db.dropCollection('profiles');
   const user_obj = req.auth;
   try {
-    const user = await User.create({
-      email: user_obj["https://evercode.com/email"],
-      name: user_obj.name,
-      age: 12,
-    })
-    await user.save();
-    const profile = await Profile.create({user: user._id})
+    const user = await User.findOne({email: user_obj["https://evercode.com/email"]});
+    if (!user) {
+      user = await User.create({
+        email: user_obj["https://evercode.com/email"],
+        username: req.body.username
+      })
+      await user.save();
+    }
+    const profile = await Profile.findOneAndUpdate({user: user._id}, {$set: {fav_lng: req.body.fav_lng, bio: req.body.bio} }, {new: true});
+    if (!profile){
+      profile = await Profile.create({user: user._id, fav_lng: req.body.fav_lng, bio: req.body.bio})
+    }
     console.log(profile);
     console.log(user);
     return res.status(200).json({ "status": "ok" });

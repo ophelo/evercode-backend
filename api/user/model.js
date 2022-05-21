@@ -5,8 +5,7 @@ const Schema = mongoose.Schema;
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  name: { type: String },
-  age: { type: Number }
+  username: { type: String, required: true }
 })
 
 const friendRequestSchema = new mongoose.Schema({
@@ -17,8 +16,13 @@ const friendRequestSchema = new mongoose.Schema({
 })
 
 const profileSchema = new mongoose.Schema({
-  name: { type: String},
   user: { type: String, required: true, ref: 'User'},
+  bio: { type: String },
+  fav_lng: {
+    type: String,
+    enum: [ 'c++', 'c', 'html', 'javascript', 'typescript', 'python'],
+    default: 'javascript'
+  },
   friends: [
     { type: Schema.Types.ObjectId, ref: 'User', unique: true},
   ],
