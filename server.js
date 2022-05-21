@@ -26,6 +26,7 @@ mongoose
 app.use(cors())
 app.use(express.json())
 app.use(require('./api/user/routes'))
+app.use(require('./api/project/routes'))
 
 app.listen(PORT, () => {
   console.log(`Starto il server sulla porta: ${PORT}!`)
