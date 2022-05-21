@@ -1,0 +1,20 @@
+{
+  "name": "subserver",
+  "version": "1.0.0",
+  "description": "bella li",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "author": "Porcodio",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "fs": "^0.0.1-security",
+    "https": "^1.0.0",
+    "node": "^17.7.2",
+    "node-docker-api": "^1.1.22",
+    "websocket": "^1.0.34",
+    "ws": "^8.6.0"
+  },
+ "type": "module"
+}
