@@ -1,8 +1,9 @@
 #include <iostream>
+#include "file2.hpp"
 
 using namespace std;
 
 int main(){
-    cout << "Hello World2!";
+    hello();
     return 0;
 }

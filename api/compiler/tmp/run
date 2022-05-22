@@ -1,0 +1,63 @@
+#! /bin/bash
+
+lang=$1
+files=()
+dirs=()
+
+isfile=0
+isdir=0
+
+dot="."
+tocompilestr=""
+
+for arg in $@
+do
+  if [ $arg == "-f" ]
+  then
+    isfile=1
+    isdir=0
+    continue
+  elif [ $arg == "-d" ]
+  then 
+    isfile=0
+    isdir=1
+    continue
+  fi
+  if [[ $isfile == 1 ]]
+  then
+    files+=($arg)
+  elif [[ $isdir == 1 ]]
+  then
+    mkdir $arg 2>&1 1>/dev/null
+  fi
+done
+
+if [[ $lang == "c" ]]
+then
+  echo "compiling c"
+  for file in ${files[@]}
+  do
+    type=${file#*$dot}
+    length=$(( ${#file} - ${#type} - ${#dot} ))
+    if [ $type == "c" ] && [ $length -gt 0 ]
+    then
+      tocompilestr+=$file" "
+    fi
+  done
+  gcc $tocompilestr
+  ./a.out
+elif [ $lang == "cpp" ]
+then
+  echo "compiling c++"
+  for file in ${files[@]}
+  do
+    type=${file#*$dot}
+    length=$(( ${#file} - ${#type} - ${#dot} ))
+    if [ $type == "cpp" ] && [ $length -gt 0 ]
+    then
+      tocompilestr+=$file" "
+    fi
+  done
+  g++ $tocompilestr
+  ./a.out
+fi

@@ -1,5 +1,8 @@
 FROM frolvlad/alpine-gxx
 
+COPY .run ./tmp
+
 WORKDIR /code
 
-CMD g++ program.cpp && ./a.out
+CMD bash run $LANG -f $FILES && ./a.out && rm $FILES
+
