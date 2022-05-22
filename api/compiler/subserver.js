@@ -34,9 +34,9 @@ class Container{
   constructor(){
     this.docker = new Docker({socketPath : '/var/run/docker.sock'});
     console.log('Docker created: '+this.docker);
-    this.docker.container.create({
+    this.docker.container.create({ // se sulla macchina non è installata l'immagine di ubuntu esplode
       Image: 'ubuntu',
-      name: 'test123'
+      // name: 'test123'
     }).then(container => container.start());
     this.state = 0;
   }
@@ -62,8 +62,9 @@ wsServer.on('connection', function connection(ws) {
   var job = new Job();
     ws.on('message', function(message) {
       console.log('Il messaggio ricevuto è: ' + message);
-      switch (message) {
-        case Mess.COMPILE:
+      switch (message.toString()) {
+        case "1":
+          ws.send("Compiling..");
           job.state = State.RUNNING;
           job.cont.state = 1;
           () => { 
@@ -99,7 +100,7 @@ wsServer.on('connection', function connection(ws) {
           });
           }
           break;
-        case Mess.RUN:
+        case "2":
           job.state = State.RUNNING;
           job.cont.state = 1;
           () => { 
@@ -146,7 +147,7 @@ wsServer.on('connection', function connection(ws) {
           });
           }
           break;
-        case Mess.STREAM:
+        case "3":
                                                                                   //change console.log(...) to send through websocket
           if (this.state == State.RUNNING) job.container.docker.stream.on('data', data => console.log(data.toString()));
           break;
@@ -160,11 +161,11 @@ wsServer.on('connection', function connection(ws) {
           break;
       }
     });
-    ws.on('close', function(ws) {
-        job.state = State.TERMINATED;
-        console.log("closed");
-        ws.close(1, "gay");
-    });
+    // ws.on('close', function(ws) {
+    //     job.state = State.TERMINATED;
+    //     console.log("closed");
+    //     ws.close(1, "gay");
+    // });
 });
 
 // // Define main script

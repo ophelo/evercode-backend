@@ -4,11 +4,12 @@
   "description": "bella li",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js"
+    "start": "node subserver.js"
   },
   "author": "Porcodio",
   "license": "Apache-2.0",
   "dependencies": {
+    "dockerode": "^3.3.1",
     "fs": "^0.0.1-security",
     "https": "^1.0.0",
     "node": "^17.7.2",
@@ -16,5 +17,5 @@
     "websocket": "^1.0.34",
     "ws": "^8.6.0"
   },
- "type": "module"
+  "type": "module"
 }
