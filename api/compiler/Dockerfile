@@ -1,8 +1,6 @@
 FROM frolvlad/alpine-gxx
 
-# COPY run ./tmp
+WORKDIR /code/$PROGID
 
-WORKDIR /code
-
-CMD ./run $LANG -f $FILES && ./a.out && rm $FILES
+CMD g++ $FILES && ./a.out
 

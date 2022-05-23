@@ -21,7 +21,7 @@ socket.on('close', (data) => {
 
 const main = async () => {
   await new Promise(resolve => setTimeout(resolve, 1000));
-  socket.send(JSON.stringify({ type: "start", language: "cpp"}))
+  socket.send(JSON.stringify({ type: "start", language: "cpp" }))
   await new Promise(resolve => setTimeout(resolve, 1000));
   // socket.send(JSON.stringify({ type: "stop", language: "cpp"}))
 };
