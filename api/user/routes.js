@@ -38,4 +38,50 @@ userRoutes.post("/firstConfig", async (req, res, next) => {
   }
 });
 
+/*
+The send friend request send a friend request to a user in order
+to add later to the circle of friends
+*/
+userRoutes.post("/sendFriendRequest", async (req, res) => {
+  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
+  const friendProfile = await Profile.findOne({ user: req.body.user_id });
+  console.log(friendProfile);
+  const friendRequest = await FriendRequest.create({ sender: user._id, type: 'RECEIVED'});
+  console.log(friendProfile.friend_request);
+  friendProfile.friend_requests.push(friendRequest._id);
+  await friendProfile.save();
+  return res.json(friendRequest);
+});
+
+userRoutes.get("/viewFriend", async (req,res) => {
+  const user = await User.find({ email: req.auth["https://evercode.com/email"] });
+  console.log(user);
+  const profile = await Profile.find({user: user._id});
+  return res.json(profile.friends);
+});
+
+userRoutes.get("/viewFriendRequest", async (req,res) => {
+  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
+  const profile = await Profile.findOne({user: user._id})
+  return res.json(profile.friend_requests);
+})
+
+userRoutes.post("/addFriend", async (req, res) => {
+  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
+  const profile = await Profile.findOne({user: user._id});
+
+  const requests = profile.friend_requests;
+  requests.forEach(async (id) => {
+    const r = await FriendRequest.findById(id);
+    console.log(r.sender);
+    profile.friends.push(r.sender);
+    console.log(profile.friends);
+  });
+  profile.friend_requests = [];
+  await profile.save().catch((err) => {
+    return res.status(500).send(err.message);
+  });
+  return res.json(profile);
+});
+
 module.exports = userRoutes;
