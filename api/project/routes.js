@@ -47,7 +47,7 @@ projectRoutes.get('/project/:_id', getProject , async (req, res) =>{
 })
 
 /*by owner id -> title,language,description.. */
-projectRoutes.get('/myproject/:owner', async (req, res) =>{
+projectRoutes.get('/project/:owner', async (req, res) =>{
   try{
     const projects = await Project.find({ owner: req.params.owner })
     if(!!projects){
@@ -65,7 +65,7 @@ projectRoutes.get('/myproject/:owner', async (req, res) =>{
 })
 
 //list of personal projects
-projectRoutes.get('/project/myprojects', async (req, res) =>{
+projectRoutes.get('/project/myProjects', async (req, res) =>{
   try{
     const projects = await Project.find({ _id: { $in: req.body.projectList } })
     if(!!projects){
@@ -121,7 +121,7 @@ projectRoutes.get('/project/code/:_id', getProject, async (req, res) => {
 })
 
 //delete a project by id
-projectRoutes.delete('/projects/:_id', getProject, async (req, res) => {
+projectRoutes.delete('/project/:_id', getProject, async (req, res) => {
   try{
     await File.deleteMany({ _id: { $in: res.project.body } })
     await res.project.delete()
@@ -143,7 +143,7 @@ projectRoutes.delete('project/:_id/:idFile', getProject, async (req, res) => {
 })
 
 //put on project by id
-projectRoutes.patch('/projects/:_id', getProject, async (req, res) => {
+projectRoutes.patch('/project/:_id', getProject, async (req, res) => {
 
  if(!!req.body.title){
    res.project.title = req.body.title
@@ -188,7 +188,7 @@ projectRoutes.patch('/project/code/save', async (req, res) => {
 })
 
 //create new file for a project
-projectRoutes.patch('/projects/code/:_id', getProject, async (req, res) => {
+projectRoutes.patch('/project/code/:_id', getProject, async (req, res) => {
   try{
     const file = new File({
       fileName: req.body.fileName,
@@ -219,6 +219,5 @@ async function getProject (req, res, next) {
   res.project = project
   next()
 }
-
 
 module.exports = projectRoutes

@@ -1,6 +1,5 @@
 const { Timestamp } = require('mongodb');
 const mongoose = require('mongoose')
-//const File = require('./modelFile')
 
 const fileSchema = mongoose.Schema();
 
@@ -44,10 +43,8 @@ function commentValidator(val) {
     return val < 150;
 }
 
-//const File = mongoose.model('File', fileSchema)
 const Project = mongoose.model('Project', projectSchema)
 
-//module.exports = File
 module.exports = Project
 
 
