@@ -3,7 +3,6 @@ import fs from 'fs';
 import {WebSocketServer} from 'ws';
 import Stream from 'stream';
 import { v4 as uuidv4 } from 'uuid';
-import { getEnvironmentData } from 'worker_threads';
 
 var wsServer = new WebSocketServer({
     port: 8080
