@@ -1,24 +1,41 @@
-const express = require('express')
-const User = require('./model')
+const express = require("express");
+const { User, Profile, FriendRequest } = require("./model");
 
-// recordRoutes is an instance of the express router.
-// We use it to define our routes.
-// The router will be added as a middleware and will take control of requests starting with path /listings.
-const userRoutes = express.Router()
+const userRoutes = express.Router();
 
-// This section will help you get a list of all the documents.
-userRoutes.route('/users').get(async function (req, res) {
-  const users = await User.find({})
-  res.json(users)
-})
+/*
+The first configuration api create the user and profile obj for a user that has signin with Auth0
+and populates the profile attributes
+*/
+userRoutes.post("/firstConfig", async (req, res, next) => {
+  const userObj = req.auth;
+  try {
+    let user = await User.findOne({
+      email: userObj["https://evercode.com/email"],
+    });
+    if (!user) {
+      user = await User.create({
+        email: userObj["https://evercode.com/email"],
+        username: req.body.username,
+      });
+      await user.save();
+    }
+    let profile = await Profile.findOneAndUpdate(
+      { user: user._id },
+      { $set: { fav_lng: req.body.fav_lng, bio: req.body.bio } },
+      { new: true }
+    );
+    if (!profile) {
+      profile = await Profile.create({
+        user: user._id,
+        fav_lng: req.body.fav_lng,
+        bio: req.body.bio,
+      });
+    }
+    return res.status(200).json({ status: "ok" });
+  } catch (err) {
+    next(err);
+  }
+});
 
-// This section will help you get a list of all the documents.
-userRoutes.route('/addUser').get(async function (req, res) {
-  const user = await User.create({
-    name: 'prova',
-    age: 12
-  })
-  res.json(user)
-})
-
-module.exports = userRoutes
+module.exports = userRoutes;
