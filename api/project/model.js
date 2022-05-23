@@ -1,14 +1,17 @@
 const { Timestamp } = require('mongodb');
 const mongoose = require('mongoose')
+//const File = require('./modelFile')
+
+const fileSchema = mongoose.Schema();
 
 const projectSchema =  new mongoose.Schema({
 
-  title: { type: String, required: true },//to exist a project must have a title
+  title: { type: String, required: true, unique: true },//to exist a project must have a title
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, //to exist must have a project owner
-  language: { type: String, required: true, enum: ['cpp','javascript','python',]  }, //to exist a project need a programming language
-  date: { type: Date, defalult: Date.now }, //date of created document or last save
+  language: { type: String, required: true, enum: ['cpp','javascript','python']  }, //to exist a project need a programming language
+  date: { type: Date, defalult: Date.now() }, //date of created document or last save
   description: { type: String, validate: descriptionValidator }, //user define caratteristics of document
-  body: [{ type: String }],
+  body: [ fileSchema ],
   isCollaborative: { type: Boolean, default: false }, //if true collaborativeUser list exist, default false -->personal project
 
   collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User'}],
@@ -18,7 +21,7 @@ const projectSchema =  new mongoose.Schema({
   comments: [{
         commentor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, //to exist must have a project owner
         comment: { type: String, validate: commentValidator },
-        date: { type: Date, default: Date.now }
+        date: { type: Date, default: Date.now() }
   }],
 
   meta: {
@@ -41,8 +44,10 @@ function commentValidator(val) {
     return val < 150;
 }
 
+//const File = mongoose.model('File', fileSchema)
 const Project = mongoose.model('Project', projectSchema)
 
+//module.exports = File
 module.exports = Project
 
 
