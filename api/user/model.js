@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema({
 });
 
 const friendRequestSchema = new mongoose.Schema({
+  type: { type: String, default: "SEND", enum: ["SEND", "RECEIVED"] },
   sender: { type: Schema.Types.ObjectId, required: true, ref: "User" },
   send_at: {
     type: Date,
