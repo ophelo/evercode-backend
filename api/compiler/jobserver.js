@@ -31,7 +31,7 @@ docker.buildImage({
   if (err) {
     return console.error(err);
   }
-  // output.pipe(process.stdout);
+  output.pipe(process.stdout);
 });
 
 wsServer.on('connection', (ws) => {
@@ -67,7 +67,7 @@ wsServer.on('connection', (ws) => {
           ws.send('close')
           state = 0
         })
-        docker.run("compiler", [], writableStream, {
+        _container = docker.run('compiler', [], writableStream, {
           'Volumes': {
             '/code': {}
           },
@@ -80,6 +80,7 @@ wsServer.on('connection', (ws) => {
             'FILES=' + filenames
             ]
         }, function(err, data, container) {
+            console.log(_container)
           if (err){
             return console.error(err);
           }
@@ -93,7 +94,7 @@ wsServer.on('connection', (ws) => {
       case Mess.STOP:
         if (state == 1) {
           console.log("killing container and exiting")
-          _container.kill()
+          // _container.kill()
         }
         break;
       default:
