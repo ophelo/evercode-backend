@@ -97,17 +97,18 @@ const WsCompilerServer = async (expressServer) => {
             })
             docker.run(message.language + 'compiler', [], writableStream, {
               'Volumes': {
-                '/code': {}
+                '/code': {},
+                '/var/run/docker.sock': {}
               },
               'Hostconfig': {
                 'AutoRemove': true,
-                'Binds': [process.cwd()+'/tmp/' + uuid + ':/code'],
+                'Binds': [process.cwd()+'/tmp/' + uuid + ':/code', '/var/run/docker.sock:/var/run/docker.sock'],
               },
               Env: [
                 'PROGID=' + uuid,
                 'FILES=' + env
                 ]
-            }, function(err, data, container) {
+            }, {Privileged: true}, function(err, data, container) {
                 _contId = container.id
               if (err){
                 return console.error(err);
