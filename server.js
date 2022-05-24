@@ -3,6 +3,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const jwtCheck = require("./config/auth");
 const { connectToServer } = require("./config/db");
+const WsCompilerServer = require('./api/compiler/websocket/jobserver')
 
 dotenv.config();
 
@@ -33,6 +34,13 @@ app.use("/api/user", require("./api/user/routes"));
 
 app.use(errController);
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`Starto il server sulla porta: ${PORT}!`);
 });
+
+WsCompilerServer(server);
+
+process.on('message', (message) => {
+  console.log(message);
+});
+

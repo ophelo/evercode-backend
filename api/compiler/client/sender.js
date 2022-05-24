@@ -1,6 +1,6 @@
-import {WebSocket} from 'ws';
+const {WebSocket} = require('ws');
 
-var socket = new WebSocket('ws://localhost:8080');
+var socket = new WebSocket('ws://localhost:5000/compiler');
 
 socket.on('open', () => {
   socket.send(JSON.stringify({ type: "file", name: "file1.cpp", text: 'I2luY2x1ZGUgPGlvc3RyZWFtPgojaW5jbHVkZSAiZmlsZTIuaHBwIgoKdXNpbmcgbmFtZXNwYWNlIHN0ZDsKCmludCBtYWluKCl7CiAgICBoZWxsbygpOwogICAgcmV0dXJuIDA7Cn0K'}))
