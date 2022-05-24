@@ -16,7 +16,7 @@
     "prettier:check": "prettier --check .",
     "prettier": "prettier --write .",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "NODE_ENV=development node server.js",
+    "dev": "NODE_ENV=development nodemon server.js",
     "start": "NODE_ENV=production node server.js"
   },
   "keywords": [
@@ -28,12 +28,17 @@
     "cors": "^2.8.5",
     "dotenv": "^16.0.0",
     "express": "^4.17.3",
+    "express-jwt": "^7.6.2",
+    "jwks-rsa": "^2.1.0",
     "mongodb": "^4.4.1",
     "mongoose": "^6.2.9",
-    "regex": "^0.1.1"
+    "regex": "^0.1.1",
+    "node-fetch": "2",
+    "underscore": "^1.13.3",
+    "uuid": "^8.3.2"
   },
   "engines": {
-    "node": "18.1.0"
+    "node": ">=16.0"
   },
   "devDependencies": {
     "eslint": "^7.32.0",
@@ -41,6 +46,7 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
+    "nodemon": "^2.0.16",
     "prettier": "2.6.2"
   }
 }
