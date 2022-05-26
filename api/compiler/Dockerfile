@@ -1,6 +1,6 @@
 FROM frolvlad/alpine-gxx
 
-WORKDIR /code/$PROGID
+WORKDIR /code
 
-CMD g++ $FILES && ./a.out
+CMD cd ${PROGID} && g++ $FILES && ./a.out
 

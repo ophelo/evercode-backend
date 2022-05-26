@@ -4,6 +4,7 @@ const WebSocket = require('ws');
 const queryString = require('query-string');
 const Stream = require('stream');
 const { v4 : uuidv4 } = require('uuid');
+const tar = require('tar');
 
 const Mess = {
   START: "start",
@@ -16,10 +17,15 @@ function genEnvironment(language,files,uuid) {
   switch (language) {
     case 'cpp':
       tmp  = ''
+      let fileNames = [];
       for (let i = 0; i < files.length; i++) {
-        fs.writeFileSync('tmp/'+ uuid +'/'+files[i].name, files[i].code)
-        if (files[i].name.split('.').pop() == 'cpp') tmp += files[i].name; tmp += ' '
+        fs.writeFileSync('./code/'+ uuid +'/'+files[i].name, files[i].code,{autoClose: true})
+        fileNames.push('./code/'+ uuid +'/'+files[i].name);
+        // if (files[i].name.split('.').pop() == 'cpp') 
+        tmp += files[i].name; tmp += ' '
       }
+      // creates the tar archive to pass in the putArchive function before starting the container
+      tar.c({},['./code/'+ uuid +'/']).pipe(fs.createWriteStream('./code/'+ uuid +'/archive.tar',{autoClose: true}));
       break;
     default:
       break;
@@ -30,7 +36,7 @@ function genEnvironment(language,files,uuid) {
 class File{
   constructor(name, text){
     this.name = name
-    let buff = new Buffer(text, 'base64')
+    let buff = new Buffer.from(text, 'base64')
     this.code = buff.toString('ascii')
   }
 }
@@ -76,7 +82,8 @@ const WsCompilerServer = async (expressServer) => {
         const message = JSON.parse(msg.toString())
         switch(message.type){
           case Mess.START:
-            fs.mkdirSync('tmp/' + uuid,{ recursive: true})
+            //console.log(process.cwd());
+            fs.mkdirSync('./code/' + uuid,{ recursive: true},{autoClose: true})
             let env = genEnvironment(message.language,files,uuid)
             console.log(env);
             // const code = message.payload;
@@ -92,29 +99,37 @@ const WsCompilerServer = async (expressServer) => {
               websocketConnection.send("Finish stream")
               websocketConnection.send('close')
               state = 0
-              console.log(uuid);
-              fs.rmdirSync('tmp/'+ uuid, { recursive: true });
+              fs.rmSync('./code/'+ uuid, { recursive: true, autoClose: true });
             })
-            docker.run(message.language + 'compiler', [], writableStream, {
-              'Volumes': {
-                '/code': {},
-                '/var/run/docker.sock': {}
-              },
-              'Hostconfig': {
-                'AutoRemove': true,
-                'Binds': [process.cwd()+'/tmp/' + uuid + ':/code', '/var/run/docker.sock:/var/run/docker.sock'],
+            docker.createContainer({
+              Image: message.language + 'compiler',
+              Tty: true,
+              HostConfig: {
+                AutoRemove: true,
               },
               Env: [
                 'PROGID=' + uuid,
                 'FILES=' + env
-                ]
-            }, {Privileged: true}, function(err, data, container) {
-                _contId = container.id
+              ],
+            },async function(err, container) {
+              // set the archive in order to create the files structure in the docker container without the use of volumes
               if (err){
                 return console.error(err);
               }
-              console.log(data.StatusCode);
-            })
+              await container.putArchive('./code/'+ uuid +'/archive.tar',{path: '/'});
+              container.start(function (err, data) {
+                if (err){
+                  return console.error(err);
+                }
+              });
+
+              container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
+                if (err){
+                  return console.error(err);
+                }
+                stream.pipe(writableStream);
+              });
+            });
             break;
           case Mess.FILE:
             console.log("received file: " + message.name + "with encripted code: " + message.text);
