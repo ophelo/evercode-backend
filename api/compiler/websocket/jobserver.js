@@ -88,18 +88,17 @@ const WsCompilerServer = async (expressServer) => {
             console.log(env);
             // const code = message.payload;
             state = 1
-            websocketConnection.send("Start compiling + executing...")
-            websocketConnection.send("State = " + state)
+            websocketConnection.send(JSON.stringify({type:"info",msgId:uuidv4(),data:"compiling"}))
             const writableStream = new Stream.Writable()
             writableStream._write = (chunk, encoding, next) => {
-              websocketConnection.send(chunk.toString());
+              websocketConnection.send(JSON.stringify({type:"stream",msgId:uuidv4(),data:chunk.toString()}));
               next();
             }
             writableStream.on('close', () => {
-              websocketConnection.send("Finish stream")
-              websocketConnection.send('close')
+              websocketConnection.send(JSON.stringify({type:"stop",msgId:uuidv4(),data:""}))
               state = 0
               fs.rmSync('./code/'+ uuid, { recursive: true, autoClose: true });
+              files = [];
             })
             docker.createContainer({
               Image: message.language + 'compiler',
@@ -117,17 +116,18 @@ const WsCompilerServer = async (expressServer) => {
                 return console.error(err);
               }
               await container.putArchive('./code/'+ uuid +'/archive.tar',{path: '/'});
-              container.start(function (err, data) {
-                if (err){
-                  return console.error(err);
-                }
-              });
 
               container.attach({stream: true, stdout: true, stderr: true}, function (err, stream) {
                 if (err){
                   return console.error(err);
                 }
                 stream.pipe(writableStream);
+              });
+
+              container.start(function (err, data) {
+                if (err){
+                  return console.error(err);
+                }
               });
             });
             break;
