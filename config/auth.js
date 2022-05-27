@@ -8,7 +8,7 @@ const jwtCheck = jwt({
     jwksRequestsPerMinute: 5,
     jwksUri: "https://dev-yvx59wsh.us.auth0.com/.well-known/jwks.json",
   }),
-  audience: "http://localhost:5000",
+  audience: process.env.HEROKU_APP_NAME ? "https://" + process.env.HEROKU_APP_NAME+".herokuapp.com" : "http://localhost:5000",
   issuer: "https://dev-yvx59wsh.us.auth0.com/",
   algorithms: ["RS256"],
 });

@@ -105,3 +105,5 @@ dist
 
 # Custom ignore
 code/
+
+yarn.lock
