@@ -1,4 +1,4 @@
-FROM node:16.15
+FROM node:17.8
 
 RUN apt-get update && \
     apt-get -qy full-upgrade && \
