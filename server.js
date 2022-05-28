@@ -1,8 +1,9 @@
-const express = require('express')
-const cors = require('cors')
-const dotenv = require('dotenv')
-const jwtCheck = require('./config/auth')
-const { connectToServer } = require('./config/db')
+const express = require("express");
+const cors = require("cors");
+const dotenv = require("dotenv");
+const jwtCheck = require("./config/auth");
+const { connectToServer } = require("./config/db");
+const WsCompilerServer = require('./api/compiler/websocket/jobserver')
 
 dotenv.config()
 
@@ -33,6 +34,13 @@ app.use('/api/project', require('./api/project/routes'))
 
 app.use(errController)
 
-app.listen(PORT, () => {
-  console.log(`Starto il server sulla porta: ${PORT}!`)
-})
+const server = app.listen(PORT, () => {
+  console.log(`Starto il server sulla porta: ${PORT}!`);
+});
+
+WsCompilerServer(server);
+
+process.on('message', (message) => {
+  console.log(message);
+});
+

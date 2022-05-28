@@ -1,10 +1,16 @@
 FROM node:17.8
 
-WORKDIR /server
+RUN apt-get update && \
+    apt-get -qy full-upgrade && \
+    apt-get install -qy curl && \
+    apt-get install -y uidmap && \
+    apt-get install -y iptables && \
+    apt-get install -y kmod && \
+    curl -sSL https://get.docker.com/ | sh
 
 COPY . .
 
-RUN "yarn"
+RUN npm install
 
-CMD [ "yarn", "dev" ]
+CMD [ "npm", "run", "dev" ]
 

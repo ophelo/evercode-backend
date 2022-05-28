@@ -1,7 +1,7 @@
 const express = require('express')
 const Project = require('./model')
 const File = require('./modelFile')
-const escapeStringRegexp = require('escape-string-regexp')
+const escapeStringRegexp = import('escape-string-regexp')
 const { User, Profile } = require('../user/model')
 const projectRoutes = express.Router()
 

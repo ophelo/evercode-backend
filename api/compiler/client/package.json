@@ -1,0 +1,13 @@
+{
+    "name": "sender",
+    "version": "1.0.0",
+    "description": "",
+    "main": "index.js",
+    "scripts": {
+      "start": "node sender.js"
+    },
+    "license": "Apache-2.0",
+    "dependencies": {
+      "ws": "^8.6.0"
+    }
+  }
