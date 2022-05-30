@@ -19,21 +19,14 @@ const projectSchema = new mongoose.Schema({
 
   shared: { type: Boolean, default: false }, // if true meta used, default false -->private project
 
-  comments: [
-    {
-      commentor: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // to exist must have a project owner
-      comment: { type: String, validate: commentValidator },
-      date: { type: Date, default: Date.now() }
-    }
-  ],
-
-  meta: {
+ /* meta: {
     upVote: { type: Number, default: 0 }, // number of upVote >0 only if shared true
     downVote: { type: Number, default: 0 }, // number of downVote >0 only if shared true
     copied: { type: Number, default: 0 }, // number of time the document is copied
     getLink: { type: Number, default: 0 }, // number of time get the link
     visual: { type: Number, default: 0 } // number of time the project was opened by other user != owner
-  }
+  },*/
+  meta: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]
 })
 
 function descriptionValidator (val) {
@@ -41,9 +34,6 @@ function descriptionValidator (val) {
   return val.length < 250
 }
 
-function commentValidator (val) {
-  return val < 150
-}
 
 projectSchema.pre('remove', async function(next) {
   await Profile.updateOne({user: this.owner},{
