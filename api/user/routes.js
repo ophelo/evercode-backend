@@ -1,4 +1,5 @@
 const express = require('express')
+const { FriendRequest } = require('../friend/model')
 const { User, Profile } = require('./model')
 
 const userRoutes = express.Router()
@@ -29,59 +30,15 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
       profile = await Profile.create({
         user: user._id,
         fav_lng: req.body.fav_lng,
-        bio: req.body.bio
+        bio: req.body.bio,
+        friend_requests: []
       })
     }
+    console.log(profile);
     return res.status(200).json({ status: 'ok' })
   } catch (err) {
     next(err)
   }
 })
-
-/*
-The send friend request send a friend request to a user in order
-to add later to the circle of friends
-*/
-userRoutes.post("/sendFriendRequest", async (req, res) => {
-  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
-  const friendProfile = await Profile.findOne({ user: req.body.user_id });
-  console.log(friendProfile);
-  const friendRequest = await FriendRequest.create({ sender: user._id, type: 'RECEIVED'});
-  console.log(friendProfile.friend_request);
-  friendProfile.friend_requests.push(friendRequest._id);
-  await friendProfile.save();
-  return res.json(friendRequest);
-});
-
-userRoutes.get("/viewFriend", async (req,res) => {
-  const user = await User.find({ email: req.auth["https://evercode.com/email"] });
-  console.log(user);
-  const profile = await Profile.find({user: user._id});
-  return res.json(profile.friends);
-});
-
-userRoutes.get("/viewFriendRequest", async (req,res) => {
-  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
-  const profile = await Profile.findOne({user: user._id})
-  return res.json(profile.friend_requests);
-})
-
-userRoutes.post("/addFriend", async (req, res) => {
-  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
-  const profile = await Profile.findOne({user: user._id});
-
-  const requests = profile.friend_requests;
-  requests.forEach(async (id) => {
-    const r = await FriendRequest.findById(id);
-    console.log(r.sender);
-    profile.friends.push(r.sender);
-    console.log(profile.friends);
-  });
-  profile.friend_requests = [];
-  await profile.save().catch((err) => {
-    return res.status(500).send(err.message);
-  });
-  return res.json(profile);
-});
 
 module.exports = userRoutes

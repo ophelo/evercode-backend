@@ -8,17 +8,6 @@ const userSchema = new mongoose.Schema({
   username: { type: String, required: true }
 })
 
-const friendRequestSchema = new mongoose.Schema({
-  type: { type: String, default: 'SEND', enum: ['SEND', 'RECEIVED'] },
-  sender: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-  send_at: {
-    type: Date,
-    default: function now () {
-      return new Date()
-    }
-  }
-})
-
 const profileSchema = new mongoose.Schema({
   user: { type: String, required: true, ref: 'User' },
   bio: { type: String },
@@ -28,14 +17,13 @@ const profileSchema = new mongoose.Schema({
     default: 'javascript'
   },
   projects: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
-  friends: [{ type: Schema.Types.ObjectId, ref: 'User', unique: true }],
+  friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   friend_requests: [
-    { type: Schema.Types.ObjectId, ref: 'FriendRequest', unique: true }
+    { type: Schema.Types.ObjectId, ref: 'FriendRequest' }
   ]
 })
 
 const user = mongoose.model('User', userSchema)
-const friendRequest = mongoose.model('FriendRequest', friendRequestSchema)
 profileSchema.pre('save', function (next) {
   this.friends = _.uniq(this.friends)
   next()
@@ -45,5 +33,4 @@ const profile = mongoose.model('Profile', profileSchema)
 module.exports = {
   User: user,
   Profile: profile,
-  FriendRequest: friendRequest
 }

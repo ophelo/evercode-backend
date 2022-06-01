@@ -31,6 +31,7 @@ app.use(jwtCheck)
 // Setting up routes
 app.use('/api/user', require('./api/user/routes'))
 app.use('/api/project', require('./api/project/routes'))
+app.use('/api/friend', require('./api/friend/routes'))
 
 app.use(errController)
 
