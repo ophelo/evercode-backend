@@ -17,7 +17,6 @@ const projectSchema = new mongoose.Schema({
   body: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File'}],
 
   isCollaborative: { type: Boolean, default: false }, // if true collaborativeUser list exist, default false -->personal project
-  CollaborativeRequests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CollaborativeRequest'}],
 
   shared: { type: Boolean, default: false }, // if true meta used, default false -->private project
 
@@ -64,37 +63,20 @@ const fileSchema = new mongoose.Schema({
 })
 
 fileSchema.pre('remove', async function(next){
-  await Project.updateOne({_id: this.project},{
+  await project.updateOne({_id: this.project},{
     $pull: {body: this._id}
   });
   next();
 })
 
- // ---- COLLABORATIVE REQUEST SCHEMA ---- // 
+const file = mongoose.model('File', fileSchema)
 
-const collaborativeRequestSchema = new mongoose.Schema({
-  type: { type: String, default: 'SEND', enum: ['SEND', 'RECEIVED'] },
-  sender: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-  project: { type: Schema.Types.ObjectId, required: true, ref: 'Project' },
-  send_at: {
-    type: Date,
-    default: function now () {
-      return new Date()
-    }
-  }
-})
+const project = mongoose.model('Project', projectSchema)
 
-const File = mongoose.model('File', fileSchema)
-
-const Project = mongoose.model('Project', projectSchema)
-
-const CollaborativeRequest = mongoose.model('CollaborativeRequest', collaborativeRequestSchema)
-
-module.exports = File
-
-module.exports = Project
-
-module.exports = CollaborativeRequest
+module.exports = {
+  File: file,
+  Project: project 
+}
 
 
 

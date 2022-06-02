@@ -1,5 +1,5 @@
 const express = require('express')
-const { User, Profile } = require('./model')
+const { User, Profile, CollaborativeRequest, FriendRequest } = require('./model')
 
 const userRoutes = express.Router()
 
@@ -7,6 +7,7 @@ const userRoutes = express.Router()
 The first configuration api create the user and profile obj for a user that has signin with Auth0
 and populates the profile attributes
 */
+
 userRoutes.post('/firstConfig', async (req, res, next) => {
   const userObj = req.auth
   try {
@@ -42,6 +43,7 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
 The send friend request send a friend request to a user in order
 to add later to the circle of friends
 */
+
 userRoutes.post("/sendFriendRequest", async (req, res) => {
   const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
   const friendProfile = await Profile.findOne({ user: req.body.user_id });
@@ -83,5 +85,25 @@ userRoutes.post("/addFriend", async (req, res) => {
   });
   return res.json(profile);
 });
+
+ // ---- ON COLLABORATIVE REQUEST ---- //
+
+userRoutes.get("/viewCollaborativeRequest", async (req,res) => {
+  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
+  const profile = await Profile.findOne({user: user._id})
+  return res.json(profile.collaborative_requests);
+})
+
+userRoutes.post("/sendCollaborativeRequest", async (req, res) => {
+  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
+  const friendProfile = await Profile.findOne({ user: req.body.user_id });
+  console.log(friendProfile);
+  const collaborativeRequest = await CollaborativeRequest.create({ sender: user._id, project: req.body.project_id, type: 'RECEIVED'});
+  console.log(collaborativeRequest.friend_request);
+  friendProfile.collaborative_requests.push(collaborativeRequest._id);
+  await friendProfile.save();
+  return res.json(collaborativeRequest);
+});
+
 
 module.exports = userRoutes

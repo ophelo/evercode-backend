@@ -193,12 +193,7 @@ projectRoutes2.patch('/:_id', getProject, async (req, res) => {
     res.project.shared = req.body.shared
   }
   // wrong type of assign
-  if (req.body.isCollaborative) {
-    res.project.isCollaborative = req.body.isCollaborative
-    res.project.collaborators = req.body.collaborators
-  }
-
-  try {
+   try {
     res.project.date = Date.now()
     await res.project.save()
     return res.status(201).json(res.project);
@@ -257,20 +252,10 @@ projectRoutes2.post('/:_id/addOwner/:idOwner', getProject, async (req, res) => {
     })
     const project = await Project.findById(req.params._id)
     // if (project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
+    if (!project.isCollaborative) return res.status(403).json({ message: 'Forbidden' })
     let isOwner = false
-    let alreadyIn = false
-    for (let owner in project.owners) {
-      if (user._id.toString() === owner.toString()) {
-        isOwner = true
-        break
-      }
-      if (req.params.idOwner.toString() === owner.toString()) {
-        alreadyIn = true
-        break
-      }
-    }
+    for (let owner in project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
     if (isOwner) return res.status(403).json({ message: 'Forbidden' })
-    if (alreadyIn) return res.status(403).json({ message: 'Forbidden' })
     // TODO: - check if owner already in 
     //       - check all owners 
     //       - 
@@ -279,6 +264,7 @@ projectRoutes2.post('/:_id/addOwner/:idOwner', getProject, async (req, res) => {
     res.status(500).json({ message: err.message })
   }
 })
+
 
 async function getProject (req, res, next) {
   let project
