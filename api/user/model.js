@@ -28,6 +28,7 @@ profileSchema.pre('save', function (next) {
   this.friends = _.uniq(this.friends)
   next()
 })
+
 const profile = mongoose.model('Profile', profileSchema)
 
 module.exports = {

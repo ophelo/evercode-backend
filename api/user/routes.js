@@ -1,5 +1,5 @@
 const express = require('express')
-const { FriendRequest } = require('../friend/model')
+const { FriendRequest } = require('../friend/models/friendRequest')
 const { User, Profile } = require('./model')
 
 const userRoutes = express.Router()
