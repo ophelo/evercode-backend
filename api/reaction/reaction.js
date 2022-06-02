@@ -1,4 +1,5 @@
 const mongoose = require('mongoose')
+const { Project } = require('../project/model');
 
 const reactionSchema = new mongoose.Schema({
     reacter: {  type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
@@ -7,9 +8,12 @@ const reactionSchema = new mongoose.Schema({
 })
 
 reactionSchema.pre('save', async function(next){
-//find project increment meta
+/*await Project.updateOne({_id: this.projectReacted},{
+    if(this.reaction === ){
 
-next();
+    }else if( )
+});
+next();*/
 })
 const Reaction = mongoose.model('Reaction', reactionSchema)
 

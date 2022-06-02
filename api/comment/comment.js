@@ -1,11 +1,11 @@
-const mongoose = require('mongoose')
+const mongoose = require('mongoose');
+const Project = require('../project/model');
 
 const commentSchema = new mongoose.Schema({
    commentor: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
    commentText: { type: String, validate: commentValidator, required: true },
-   commented: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', required: true },
    date: { type: Date, default: Date.now() },
-   reference: { type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }
+   reference: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]
 })
 
 function commentValidator (val) {
@@ -13,8 +13,22 @@ function commentValidator (val) {
 }
 
 commentSchema.pre('remove', async function(next){
-  comments = await Comment.find({ reference: this._id });
-  await Comment.deleteMany( comments );
+  const comments = await Comment.findMany({ _id: { $in: this.reference } });
+  await Comment.removeMany( comments );
+  next();
+})
+
+commentSchema.methods.newComment = async function(idProject){
+  await Project.updateOne({_id: idProject },{ $push: { comments: this._id}})
+}
+
+commentSchema.methods.replyComment = async function(idComment){
+  await Comment.updateOne({_id: idComment },{ $push: { reference: this._id}})
+}
+
+commentSchema.pre('find', async function(next){
+  const comments = await Comment.findMany({ _id: { $in: this.reference } });
+  req.comments = comments
   next();
 })
 

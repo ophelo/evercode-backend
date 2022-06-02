@@ -10,7 +10,8 @@ const projectSchema = new mongoose.Schema({
     required: true,
     enum: ['cpp', 'javascript', 'python']
   }, // to exist a project need a programming language
-  date: { type: Date, defalult: Date.now() }, // date of created document or last save
+  creationDate: { type: Date, defalult: Date.now() }, // date of created document or last save
+  lastSave: { type: Date }, // date of created document or last save
   description: { type: String, validate: descriptionValidator }, // user define caratteristics of document
   body: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File'}],
   isCollaborative: { type: Boolean, default: false }, // if true collaborativeUser list exist, default false -->personal project
@@ -19,14 +20,14 @@ const projectSchema = new mongoose.Schema({
 
   shared: { type: Boolean, default: false }, // if true meta used, default false -->private project
 
- /* meta: {
+  meta: {
     upVote: { type: Number, default: 0 }, // number of upVote >0 only if shared true
     downVote: { type: Number, default: 0 }, // number of downVote >0 only if shared true
     copied: { type: Number, default: 0 }, // number of time the document is copied
     getLink: { type: Number, default: 0 }, // number of time get the link
     visual: { type: Number, default: 0 } // number of time the project was opened by other user != owner
-  },*/
-  meta: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]
+  },
+  comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]
 })
 
 function descriptionValidator (val) {
@@ -41,6 +42,8 @@ projectSchema.pre('remove', async function(next) {
   });
   next();
 })
+
+projectSchema.virtual('Votes').get(function(){ return this.upVotethis.downVote})
 
 const Project = mongoose.model('Project', projectSchema)
 
