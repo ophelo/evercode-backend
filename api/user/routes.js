@@ -1,5 +1,5 @@
 const express = require('express')
-const { User, Profile, CollaborativeRequest, FriendRequest } = require('./model')
+const { User, Profile, FriendRequest, CollaborativeRequest } = require('./model')
 
 const userRoutes = express.Router()
 
@@ -105,5 +105,22 @@ userRoutes.post("/sendCollaborativeRequest", async (req, res) => {
   return res.json(collaborativeRequest);
 });
 
+userRoutes.post("/acceptCollaboration", async (req, res) => {
+  const user = await User.findOne({ email: req.auth["https://evercode.com/email"] });
+  const profile = await Profile.findOne({user: user._id});
+
+  const requests = profile.collaborative_requests;
+  requests.forEach(async (id) => {
+    const r = await CollaborativeRequest.findById(id);
+    console.log(r.project);
+    profile.projects.push(r.project);
+    console.log(profile.projects);
+  });
+  profile.collaborative_requests = [];
+  await profile.save().catch((err) => {
+    return res.status(500).send(err.message);
+  });
+  return res.json(profile);
+});
 
 module.exports = userRoutes
