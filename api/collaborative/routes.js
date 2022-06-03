@@ -372,4 +372,4 @@ async function getProject (req, res, next) {
 }
 
 
-module.exports = {projectRoutes: projectRoutes2}
+module.exports = projectRoutes2
