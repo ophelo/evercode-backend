@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const Project = require('./model');
+const Project = require('../collaborative/model');
 
 const fileSchema = new mongoose.Schema({
   fileName: { type: String, required: true },
@@ -14,4 +14,4 @@ fileSchema.pre('remove', async function(next){
   next();
 })
 const File = mongoose.model('File', fileSchema)
-module.exports = File
+// module.exports = File

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const { Profile, User } = require('../user/model');
-// const File = require('./modelFile');
+const File = require('./modelFile');
 
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true }, // to exist a project must have a title
@@ -54,4 +54,4 @@ projectSchema.pre('remove', async function(next) {
 
 const Project = mongoose.model('Project', projectSchema)
 
-module.exports = Project
+// module.exports = Project
