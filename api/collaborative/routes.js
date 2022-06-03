@@ -331,6 +331,7 @@ projectRoutes2.post('/copyProject/:_id/', getProject, async (req, res) => {
     // if (project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
     if (!project.shared) return res.status(403).json({ message: 'Forbidden' })
 
+    project.meta.copied += 1
     // creation of new copied project with new owner
     const newProject = new Project({
       title: project.title,

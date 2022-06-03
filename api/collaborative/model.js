@@ -32,7 +32,7 @@ const projectSchema = new mongoose.Schema({
     downVote: { type: Number, default: 0 }, // number of downVote >0 only if shared true
     copied: { type: Number, default: 0 }, // number of time the document is copied
     getLink: { type: Number, default: 0 }, // number of time get the link
-    visual: { type: Number, default: 0 } // number of time the project was opened by other user != owner
+    views: { type: Number, default: 0 } // number of time the project was opened by other user != owner
   }
 })
 
