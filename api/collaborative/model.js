@@ -6,7 +6,8 @@ const { Profile, User } = require('../user/model');
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true }, // to exist a project must have a title
   owners: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }], // to exist must have a project owner
-  isUsed: { type: Boolean, default: false },
+  isUsed: [{ type: Boolean, default: false }],
+  wonnaRead: { type: Boolean, default: false, },
   language: {
     type: String,
     required: true,
