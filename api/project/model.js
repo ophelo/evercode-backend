@@ -1,5 +1,5 @@
-const mongoose = require('mongoose');
-const { Profile, User } = require('../user/model');
+const mongoose = require('mongoose')
+const { Profile, User } = require('../user/model')
 // const File = require('./modelFile');
 
 const projectSchema = new mongoose.Schema({
@@ -12,7 +12,7 @@ const projectSchema = new mongoose.Schema({
   }, // to exist a project need a programming language
   date: { type: Date, defalult: Date.now() }, // date of created document or last save
   description: { type: String, validate: descriptionValidator }, // user define caratteristics of document
-  body: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File'}],
+  body: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File' }],
   isCollaborative: { type: Boolean, default: false }, // if true collaborativeUser list exist, default false -->personal project
 
   collaborators: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
@@ -45,11 +45,11 @@ function commentValidator (val) {
   return val < 150
 }
 
-projectSchema.pre('remove', async function(next) {
-  await Profile.updateOne({user: this.owner},{
-    $pull: {projects: this._id}
-  });
-  next();
+projectSchema.pre('remove', async function (next) {
+  await Profile.updateOne({ user: this.owner }, {
+    $pull: { projects: this._id }
+  })
+  next()
 })
 
 const Project = mongoose.model('Project', projectSchema)

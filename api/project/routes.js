@@ -11,7 +11,7 @@ projectRoutes.post('/add', async (req, res) => {
     email: req.auth['https://evercode.com/email']
   })
   const file = new File({
-    fileName: "file",
+    fileName: 'file',
     code: req.body.code
   })
 
@@ -26,17 +26,17 @@ projectRoutes.post('/add', async (req, res) => {
   try {
     const newFile = await file.save()
     project.body.push(newFile)
-    await project.save();
-    const profile = await Profile.findOne({user: user._id});
-    profile.projects.push(project);
-    await profile.save();
-    return res.status(201).json(project);
+    await project.save()
+    const profile = await Profile.findOne({ user: user._id })
+    profile.projects.push(project)
+    await profile.save()
+    return res.status(201).json(project)
   } catch (err) {
     return res.status(400).json({ message: err.message })
   }
 })
 
-// project by id
+//  project by id ( per aprire un progetto specifico)
 projectRoutes.get('/:_id', getProject, async (req, res) => {
   if (!res.project.shared) {
     const user = await User.findOne({
@@ -78,10 +78,10 @@ projectRoutes.get('/view/my', async (req, res) => {
     const user = await User.findOne({
       email: req.auth['https://evercode.com/email']
     })
-    const profile = await Profile.findOne({user: user._id});
+    const profile = await Profile.findOne({ user: user._id })
     if (profile.projects) {
       const filteredProjects = await profile.projects.map(async (val) => {
-        const project = await Project.findById(val);
+        const project = await Project.findById(val)
         if (!project) return {}
         return {
           id: project._id,
@@ -91,38 +91,38 @@ projectRoutes.get('/view/my', async (req, res) => {
           date: project.date,
           body: project.body
         }
-      });
+      })
       return res.status(200).json(await Promise.all(filteredProjects))
-    } else return res.status(404).json({ message: 'NO Projects for you' })
+    } else return res.status(404).json({ message: 'You have no Projects :( ' })
   } catch (err) {
     return res.status(500).json({ message: err.message })
   }
 })
 
 // global research
-projectRoutes.get('/search', async (req, res) => {
-  try {
-    let projects
-    if (req.body.keyWord) {
-      const $regex = escapeStringRegexp(req.body.keyWord)
-      projects = await Project.find({
-        shared: true,
-        $or: [
-          { title: { $regex, $options: 'i' } },
-          { description: { $regex, $options: 'i' } }
-        ]
-      })
-    } else {
-      projects = await Project.find({ shared: true })
-    }
-    if (!projects) {
-      return res.status(404).json({ message: 'no public project' })
-    }
-    return res.status(200).json(projects)
-  } catch (err) {
-    res.status(500).json({ message: err.message })
-  }
-})
+// projectRoutes.get('/search', async (req, res) => {
+//   try {
+//     let projects
+//     if (req.body.keyWord) {
+//       const $regex = escapeStringRegexp(req.body.keyWord)
+//       projects = await Project.find({
+//         shared: true,
+//         $or: [
+//           { title: { $regex, $options: 'i' } },
+//           { description: { $regex, $options: 'i' } }
+//         ]
+//       })
+//     } else {
+//       projects = await Project.find({ shared: true })
+//     }
+//     if (!projects) {
+//       return res.status(404).json({ message: 'no public project' })
+//     }
+//     return res.status(200).json(projects)
+//   } catch (err) {
+//     res.status(500).json({ message: err.message })
+//   }
+// })
 
 // get files of a project by id
 projectRoutes.get('/:_id/viewFiles', getProject, async (req, res) => {
@@ -143,10 +143,10 @@ projectRoutes.delete('/:_id', getProject, async (req, res) => {
   try {
     const user = await User.findOne({
       email: req.auth['https://evercode.com/email']
-    });
+    })
     if (res.project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
     await File.deleteMany({ _id: { $in: res.project.body } })
-    await res.project.delete();
+    await res.project.delete()
     res.json({ message: 'Deleted Project' })
   } catch (err) {
     res.status(500).json({ message: err.message })
@@ -160,8 +160,8 @@ projectRoutes.delete('/:_id/file/:idFile', getProject, async (req, res) => {
       email: req.auth['https://evercode.com/email']
     })
     if (res.project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
-    const file = await File.findById({ _id: req.params.idFile });
-    await file.remove();
+    const file = await File.findById({ _id: req.params.idFile })
+    await file.remove()
     return res.json({ message: 'Deleted file' })
   } catch (err) {
     return res.status(500).json({ message: err.message })
@@ -195,7 +195,7 @@ projectRoutes.patch('/:_id', getProject, async (req, res) => {
   try {
     res.project.date = Date.now()
     await res.project.save()
-    return res.status(201).json(res.project);
+    return res.status(201).json(res.project)
   } catch (err) {
     return res.status(500).json({ message: err.message })
   }
@@ -255,7 +255,34 @@ async function getProject (req, res, next) {
   }
 
   res.project = project
-  next()
+  next() // vai alla prossima route
 }
 
+// Paginated Project Research ( sia nome che descrizione ) 
+projectRoutes.get('/search', async (req, res) => {
+  try {
+    let projects
+    let n = 10
+    let page = req.params.page ?? 1
+    if (req.body.keyWord) {
+      const $regex = escapeStringRegexp(req.body.keyWord)
+      projects = await Project.find({
+        shared: true,
+        $or: [
+          { title: { $regex, $options: 'i' } },
+          { description: { $regex, $options: 'i' } }
+        ]
+      }).skip((n*page) - n)
+      .limit(n)
+    } else {
+      projects = await Project.find({ shared: true })
+    }
+    if (!projects) {
+      return res.status(404).json({ message: 'no public project' })
+    }
+    return res.status(200).json(projects)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
 module.exports = projectRoutes

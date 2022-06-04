@@ -38,4 +38,25 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
   }
 })
 
+projectRoutes.get('/search', async (req, res) => {
+  try {
+    let profiles 
+    let n = 10
+    let page = req.params.page ?? 1
+    if (req.body.keyWord) {
+      const $regex = escapeStringRegexp(req.body.keyWord)
+      profiles = await Profile.find({
+          user: { $regex, $options: 'i' } 
+      }).skip((n*page) - n)
+      .limit(n)
+    } 
+    else if (!projects) {
+      return res.status(404).json({ message: 'no public project' })
+    }
+    return res.status(200).json(profiles)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
 module.exports = userRoutes
