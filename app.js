@@ -5,7 +5,7 @@ const userRoutes = require('./api/user/routes')
 const projectRoutes = require('./api/project/routes')
 const friendRoutes = require('./api/friend/routes')
 
-const jwtCheck = require('./config/auth')
+const { jwtCheck } = require('./config/auth')
 
 const app = express()
 
