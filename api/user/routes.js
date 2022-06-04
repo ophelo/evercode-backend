@@ -21,8 +21,10 @@ and populates the profile attributes
 userRoutes.post('/firstConfig', async (req, res, next) => {
   const userObj = req.auth
   try {
-    let user = await User.findOne({
+    let user = await User.findOneAndUpdate({
       email: userObj['https://evercode.com/email']
+    },{
+      $set: { username: req.body.username }
     })
     if (!user) {
       user = await User.create({
