@@ -5,6 +5,8 @@ const { getUser } = require('../middleware/auth')
 
 const friendRoutes = express.Router()
 
+friendRoutes.delete('/request/:reqId', getUser, RequestController.request_delete);
+
 friendRoutes.post('/request/send/:friendId', getUser, RequestController.request_send)
 
 friendRoutes.get('/request', getUser, RequestController.request_list)

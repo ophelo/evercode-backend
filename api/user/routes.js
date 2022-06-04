@@ -1,6 +1,7 @@
 const express = require('express')
 const { FriendRequest } = require('../friend/models/friendRequest')
 const { User, Profile } = require('./model')
+const { getUser } = require('../middleware/auth')
 
 const userRoutes = express.Router()
 
@@ -39,6 +40,13 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
   } catch (err) {
     next(err)
   }
+})
+
+userRoutes.get('/me', getUser, async (req,res) => {
+  const profile = await Profile.findOne({user: req.user._id})
+    .populate('user')
+  if (!profile) return res.status(404).json({error: "No profile found!"})
+  return res.status(200).json(profile);
 })
 
 module.exports = userRoutes

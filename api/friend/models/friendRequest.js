@@ -15,35 +15,47 @@ const friendRequestSchema = new mongoose.Schema({
   }
 })
 
-friendRequestSchema.pre('save', async function () {
-  const profile = await Profile.findOne({ user: this.receiver, friends: this.sender })
-  if (profile || this.receiver.toString() === this.sender.toString()) { throw new Error('forbidden operation!') }
+friendRequestSchema.pre('save', async function (context) {
+  if (this.receiver.toString() === this.sender.toString()) throw new Error('forbidden operation!')
+  const check1 = await Profile.findOne({ user: this.receiver, friends: this.sender })
+  if (check1) throw new Error('already friend with this user')
+  const check2 = await this.constructor.findOne({ sender: this.receiver, receiver: this.sender })
+  if (check2) throw new Error('a friend request of this type already exists')
 })
 
 friendRequestSchema.methods.linkUsers = async function () {
   await Profile.updateOne({ user: this.sender }, { $addToSet: { friend_requests: this._id } })
-    .then(templates => console.log(templates))
+    .then(() => {})
     .catch(err => console.log(err))
   await Profile.updateOne({ user: this.receiver }, { $addToSet: { friend_requests: this._id } })
-    .then(templates => console.log(templates))
+    .then(() => {})
+    .catch(err => console.log(err))
+}
+
+friendRequestSchema.methods.unlinkUsers = async function () {
+  await Profile.updateOne({ user: this.sender }, { $pull: { friend_requests: this._id } })
+    .then(() => {})
+    .catch(err => console.log(err))
+  await Profile.updateOne({ user: this.receiver }, { $pull: { friend_requests: this._id } })
+    .then(() => {})
     .catch(err => console.log(err))
 }
 
 friendRequestSchema.methods.accept = async function () {
   await Profile.updateOne({ user: this.sender }, { $addToSet: { friends: this.receiver }, $pull: { friend_requests: this._id } })
-    .then(templates => console.log(templates))
+    .then(() => {})
     .catch(err => console.log(err))
   await Profile.updateOne({ user: this.receiver }, { $addToSet: { friends: this.sender }, $pull: { friend_requests: this._id } })
-    .then(templates => console.log(templates))
+    .then(() => {})
     .catch(err => console.log(err))
 }
 
 friendRequestSchema.methods.refuse = async function () {
   await Profile.updateOne({ user: this.sender }, { $pull: { friend_requests: this._id } })
-    .then(templates => console.log(templates))
+    .then(() => {})
     .catch(err => console.log(err))
   await Profile.updateOne({ user: this.receiver }, { $pull: { friend_requests: this._id } })
-    .then(templates => console.log(templates))
+    .then(() => {})
     .catch(err => console.log(err))
 }
 

@@ -46,7 +46,7 @@ afterAll(async () => {
 })
 
 describe('Testing Request list API', () => {
-  test('Should return the list of fconst reqUser = irend request', async () => {
+  test('Should return the list of send request', async () => {
     // Populate the database
     await User.create(reqUser)
     await Profile.create({ user: reqUser._id })
@@ -56,13 +56,82 @@ describe('Testing Request list API', () => {
     await fr.linkUsers()
 
     const req = mockRequest()
-    req.user = reqUser
     const res = mockResponse()
+    
+    // Setting up the request
+    req.user = reqUser
+    req.query.type = 'send'
 
     await RequestController.request_list(req, res)
 
     expect(res.status).toHaveBeenCalledWith(200)
-    expect(res.json).not.toHaveReturnedWith([])
+    expect(res.json).not.toHaveBeenCalledWith([])
+  })
+
+  test('Should return zero sent request', async () => {
+    // Populate the database
+    await User.create(reqUser)
+    await Profile.create({ user: reqUser._id })
+    await User.create(friend)
+    await Profile.create({ user: friend._id })
+    const fr = await FriendRequest.create(friend_request2)
+    await fr.linkUsers()
+
+    const req = mockRequest()
+    const res = mockResponse()
+    
+    // Setting up the request
+    req.user = reqUser
+    req.query.type = 'send'
+
+    await RequestController.request_list(req, res)
+
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith([])
+  })
+
+  test('Should return zero received request', async () => {
+    // Populate the database
+    await User.create(reqUser)
+    await Profile.create({ user: reqUser._id })
+    await User.create(friend)
+    await Profile.create({ user: friend._id })
+    const fr = await FriendRequest.create(friend_request)
+    await fr.linkUsers()
+
+    const req = mockRequest()
+    const res = mockResponse()
+    
+    // Setting up the request
+    req.user = reqUser
+    req.query.type = 'received'
+
+    await RequestController.request_list(req, res)
+
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).toHaveBeenCalledWith([])
+  })
+
+  test('Should return the list of received request', async () => {
+    // Populate the database
+    await User.create(reqUser)
+    await Profile.create({ user: reqUser._id })
+    await User.create(friend)
+    await Profile.create({ user: friend._id })
+    const fr = await FriendRequest.create(friend_request2)
+    await fr.linkUsers()
+
+    const req = mockRequest()
+    const res = mockResponse()
+    
+    // Setting up the request
+    req.user = reqUser
+    req.query.type = 'received'
+
+    await RequestController.request_list(req, res)
+
+    expect(res.status).toHaveBeenCalledWith(200)
+    expect(res.json).not.toHaveBeenCalledWith([])
   })
 })
 
@@ -134,5 +203,28 @@ describe('Testing action friend request API', () => {
     expect(res.status).toHaveBeenCalledWith(200)
     expect(res.json).not.toHaveBeenCalledWith({})
     expect(res.json).not.toHaveBeenCalledWith(null)
+  })
+})
+
+describe("Testing request delete API", () => {
+  test("Should delete the request correctly", async () => {
+    // Setting up database
+    await User.create(reqUser)
+    await Profile.create({ user: reqUser._id })
+    await User.create(friend)
+    await Profile.create({ user: friend._id })
+    const fr = await FriendRequest.create(friend_request)
+    await fr.linkUsers()
+
+    const req = mockRequest()
+    const res = mockResponse()
+
+    // Setting up request
+    req.user = reqUser
+    req.params.reqId = friend_request._id
+
+    await RequestController.request_delete(req,res)
+
+    expect(res.status).toHaveBeenCalledWith(204)
   })
 })

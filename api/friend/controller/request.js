@@ -1,6 +1,17 @@
 const { Profile } = require('../../user/model')
 const { FriendRequest } = require('../models/friendRequest')
 
+exports.request_delete = async (req, res) => {
+  const fr = await FriendRequest.findOne({sender: req.user._id, _id: req.params.reqId })
+  if (!fr) return res.status(404).json({error: "Not found!"})
+  await fr.unlinkUsers();
+  await fr.remove()
+    .catch(err => {
+      return res.status(500).json({error: "internal error!"})
+    })
+  return res.status(204).json()
+}
+
 exports.request_send = async (req, res) => {
   await FriendRequest.create({ sender: req.user._id, receiver: req.params.friendId })
     .then(async fr => {
@@ -13,15 +24,28 @@ exports.request_send = async (req, res) => {
 }
 
 exports.request_list = async (req, res) => {
+  let type;
+  switch (req.query?.type){
+    case 'send':
+      type=1
+      break
+    case 'received':
+      type=0
+      break
+    default:
+      return res.status(400).json({error: "bad request"})
+  }
   const profile = await Profile.findOne({ user: req.user._id }, 'friend_requests -_id')
     .populate({
       path: 'friend_requests',
       select: '-__v -send_at',
+      match: type ? {sender: req.user._id } : { receiver: req.user._id},
       populate: {
-        path: 'sender',
+        path: type ? 'receiver' : 'sender',
         select: '-__v'
       }
     })
+  if (!profile) return res.status(404).json({error: "No profile found!"})
   return res.status(200).json(profile.friend_requests)
 }
 
@@ -45,6 +69,7 @@ exports.request_action = async (req, res) => {
   await request.remove()
 
   const profile = await Profile.findOne({ user: req.user._id })
+  if (!profile) return res.status(404).json({error: "No profile found!"})
 
   return res.status(200).json(profile)
 }

@@ -39,8 +39,9 @@ describe('Testing friend list API', () => {
     await Profile.create({ user: reqUser._id, friends: [friend._id] })
 
     const req = mockRequest()
-    req.user = reqUser
     const res = mockResponse()
+
+    req.user = reqUser
 
     await FriendController.friend_list(req, res)
 

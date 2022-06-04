@@ -17,3 +17,5 @@ services:
     volumes:
       # - ./:/server
       - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - MONGO_URL=mongodb://prova:SECRET@mongodb:27017
