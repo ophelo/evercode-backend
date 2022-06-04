@@ -14,7 +14,8 @@ const profileSchema = new mongoose.Schema({
   fav_lng: {
     type: String,
     enum: ['c++', 'c', 'html', 'javascript', 'typescript', 'python'],
-    default: 'javascript'
+    default: 'javascript',
+    required: true
   },
   projects: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
   friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],

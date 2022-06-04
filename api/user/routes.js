@@ -1,9 +1,18 @@
 const express = require('express')
-const { FriendRequest } = require('../friend/models/friendRequest')
 const { User, Profile } = require('./model')
 const { getUser } = require('../middleware/auth')
+const { management } = require('../../config/auth')
 
 const userRoutes = express.Router()
+
+userRoutes.get('/checkProfile', (req, res) => {
+  const userObj = req.auth;
+  management.getUser({id: userObj.sub}, (err,user) => {
+    if(err) return res.status(500).json({error: "broken connection with auth0"})
+    if(user.user_metadata?.first_config) return res.status(200).json({status: true});
+    return res.status(200).json({status: false})
+  })
+})
 
 /*
 The first configuration api create the user and profile obj for a user that has signin with Auth0
@@ -36,7 +45,12 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
       })
     }
     console.log(profile)
-    return res.status(200).json({ status: 'ok' })
+    management.updateUserMetadata({id: userObj.sub},{first_config: true}, (err,user) => {
+      console.log(err)
+      if (err) return res.status(500).json({error: "auth0 connection failed!"})
+      console.log(user)
+      return res.status(200).json({status: 'ok'})
+    })
   } catch (err) {
     next(err)
   }
