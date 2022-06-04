@@ -1,7 +1,7 @@
 const express = require('express')
 const {Project, File} = require('./model')
 const escapeStringRegexp = import('escape-string-regexp')
-const { User, Profile } = require('../user/model')
+const { User, Profile } = require('./model')
 const projectRoutes2 = express.Router()
 
 // create new project
@@ -239,7 +239,7 @@ projectRoutes2.patch('/:_id/file/:idFile', getProject, async (req, res) => {
     for (let owner in res.project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
     if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
       const file = await File.findById(req.params.idFile)
-    if (file.isUsed) res.status(400).json({message: 'file non in accessible state'})
+    if (file.isUsed) res.status(403).json({message: 'file in unavailable state'})
       file.fileName = req.body.fileName
       file.code = req.body.code
       res.project.date = Date.now()
@@ -300,7 +300,7 @@ projectRoutes2.post('/:_id/addOwner/:idOwner', getProject, async (req, res) => {
 })
 
 //remove a owner
-projectRoutes2.delete('/:_id/file/:idFile', getProject, async (req, res) => {
+projectRoutes2.delete('/:_id/owner/', getProject, async (req, res) => {
   try {
     const user = await User.findOne({
       email: req.auth['https://evercode.com/email']

@@ -1,6 +1,6 @@
 const express = require('express')
-const {Project, File} = require('../collaborative/model')
-// const File = require('./modelFile')
+const Project = require('./model')
+const File = require('./modelFile')
 const escapeStringRegexp = import('escape-string-regexp')
 const { User, Profile } = require('../user/model')
 const projectRoutes = express.Router()
@@ -258,4 +258,4 @@ async function getProject (req, res, next) {
   next()
 }
 
-// module.exports = projectRoutes
+module.exports = projectRoutes

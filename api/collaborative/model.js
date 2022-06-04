@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { Profile, User } = require('../user/model');
+const Profile = require('../user/model');
 
  // ---- PROJECT SCHEMA ---- //
 
@@ -77,9 +77,3 @@ module.exports = {
   File: file,
   Project: project 
 }
-
-
-
-    // let isOwner = false
-    // for (let owner in res.collaborative.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
-    // if (isOwner) return res.status(403).json({ message: 'Forbidden' }) 

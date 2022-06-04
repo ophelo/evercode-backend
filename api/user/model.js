@@ -1,6 +1,5 @@
 const mongoose = require('mongoose')
 const _ = require('underscore')
-const CollaborativeRequest = require('../collaborative/model')
 
 const Schema = mongoose.Schema
 

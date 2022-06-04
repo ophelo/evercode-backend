@@ -54,4 +54,4 @@ projectSchema.pre('remove', async function(next) {
 
 const Project = mongoose.model('Project', projectSchema)
 
-// module.exports = Project
+module.exports = Project
