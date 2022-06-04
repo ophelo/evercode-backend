@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema({
 })
 
 const profileSchema = new mongoose.Schema({
-  user: { type: String, required: true, ref: 'User' },
+  user: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
   bio: { type: String },
   fav_lng: {
     type: String,
@@ -33,5 +33,5 @@ const profile = mongoose.model('Profile', profileSchema)
 
 module.exports = {
   User: user,
-  Profile: profile,
+  Profile: profile
 }

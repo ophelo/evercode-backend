@@ -15,9 +15,9 @@
     "lint": "eslint --fix . ",
     "prettier:check": "prettier --check .",
     "prettier": "prettier --write .",
-    "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "NODE_ENV=development node server.js",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production node server.js",
+    "test": "jest"
   },
   "keywords": [
     "node",
@@ -39,6 +39,7 @@
     "query-string": "^7.1.1",
     "regex": "^0.1.1",
     "stream": "^0.0.2",
+    "supertest": "^6.2.3",
     "tar": "^6.1.11",
     "underscore": "^1.13.3",
     "uuid": "^8.3.2",
@@ -53,6 +54,8 @@
     "eslint-plugin-import": "^2.25.4",
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.2.0",
+    "jest": "^28.1.0",
+    "mongodb-memory-server": "^8.6.0",
     "nodemon": "^2.0.16",
     "prettier": "2.6.2"
   }

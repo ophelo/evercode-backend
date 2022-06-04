@@ -34,7 +34,7 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
         friend_requests: []
       })
     }
-    console.log(profile);
+    console.log(profile)
     return res.status(200).json({ status: 'ok' })
   } catch (err) {
     next(err)
