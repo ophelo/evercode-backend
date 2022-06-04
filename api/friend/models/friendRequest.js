@@ -20,7 +20,8 @@ friendRequestSchema.pre('save', async function (context) {
   const check1 = await Profile.findOne({ user: this.receiver, friends: this.sender })
   if (check1) throw new Error('already friend with this user')
   const check2 = await this.constructor.findOne({ sender: this.receiver, receiver: this.sender })
-  if (check2) throw new Error('a friend request of this type already exists')
+  const check3 = await this.constructor.findOne({ sender: this.sender, receiver: this.receiver })
+  if (check2 || check3) throw new Error('a friend request of this type already exists')
 })
 
 friendRequestSchema.methods.linkUsers = async function () {
@@ -60,13 +61,6 @@ friendRequestSchema.methods.refuse = async function () {
 }
 
 const friendRequest = mongoose.model('FriendRequest', friendRequestSchema)
-
-friendRequest.collection.createIndex({ sender: 1, receiver: 1 }, { unique: true })
-
-async () => {
-  await friendRequest.syncIndexes()
-  await friendRequest.ensureIndexes({ dropDup: true })
-}
 
 module.exports = {
   FriendRequest: friendRequest
