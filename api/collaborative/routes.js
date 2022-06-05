@@ -9,10 +9,8 @@ projectRoutes2.post('/add', async (req, res) => {
   const user = await User.findOne({
     email: req.auth['https://evercode.com/email']
   })
-  const file = new File({
-    fileName: "file",
-    code: req.body.code
-  })
+
+  const profile = await Profile.findOne({user: user._id});
 
   const project = new Project({
     title: req.body.title,
@@ -23,10 +21,7 @@ projectRoutes2.post('/add', async (req, res) => {
   })
 
   try {
-    const newFile = await file.save()
-    project.body.push(newFile)
     await project.save();
-    const profile = await Profile.findOne({user: user._id});
     profile.projects.push(project);
     await profile.save();
     return res.status(201).json(project);
@@ -35,6 +30,24 @@ projectRoutes2.post('/add', async (req, res) => {
   }
 })
 
+projectRoutes2.post('/addFile/:progId', async (req, res) => {
+  const user = await User.findOne({
+    email: req.auth['https://evercode.com/email']
+  })
+  const file = new File({
+    fileName: req.body.name,
+    code: req.body.code,
+    project: req.params.progId
+  })
+  const project = await Project.findById(req.params.progId)
+  try {
+    project.body.push(file)
+    await project.save();
+    return res.status(201).json(file);
+  } catch (err) {
+    return res.status(400).json({ message: err.message })
+  }
+})
 // project by id
 projectRoutes2.get('/:_id', getProject, async (req, res) => {
   if (!res.project.shared) {
@@ -161,6 +174,7 @@ projectRoutes2.delete('/:_id', getProject, async (req, res) => {
   }
 })
 
+// DA VEDERE CON IL SERVER DI COMPILAZIONE
 // delete single file by id
 projectRoutes2.delete('/:_id/file/:idFile', getProject, async (req, res) => {
   try {
@@ -185,12 +199,15 @@ projectRoutes2.patch('/setCollaborative/:_id', getProject, async (req, res) => {
       email: req.auth['https://evercode.com/email']
     })
     
-    let isOwner = false
-    for (let owner in res.project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
-    if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
+    if (user._id.toString() !== res.project.owners[0].toString()) return res.status(403).json({ message: 'Forbidden' })
+    
+    // let isOwner = false
+    // for (let owner in res.project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
+    // if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
     
     res.project.isCollaborative = true
     await res.project.save()
+    return res.status(201).json(res.project);
   } catch (err) {
     return res.status(500).json({ message: err.message })
   }
@@ -208,6 +225,11 @@ projectRoutes2.patch('/:_id', getProject, async (req, res) => {
   if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
 
   // if (res.project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
+
+  if (req.body.isCollaborative) {
+    res.project.isCollaborative = req.body.isCollaborative
+  }
+
   if (req.body.title) {
     res.project.title = req.body.title
   }
@@ -240,6 +262,7 @@ projectRoutes2.patch('/:_id/file/:idFile', getProject, async (req, res) => {
     if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
       const file = await File.findById(req.params.idFile)
     if (file.isUsed) res.status(403).json({message: 'file in unavailable state'})
+    file.isUsed = true
       file.fileName = req.body.fileName
       file.code = req.body.code
       res.project.date = Date.now()
@@ -286,8 +309,7 @@ projectRoutes2.post('/:_id/addOwner/:idOwner', getProject, async (req, res) => {
     const project = await Project.findById(req.params._id)
     // if (project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
     if (!project.isCollaborative) {
-      project.isCollaborative = true
-      await project.save()
+      return res.status(403).json({ message: 'Forbidden' })
     }
     let isOwner = false
     for (let owner in project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }

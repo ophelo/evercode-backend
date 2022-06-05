@@ -15,7 +15,7 @@ const Mess = {
 
 function genEnvironment(language,files,uuid) {
   let tmp
-  let map = []
+  // let map = []
   switch (language) {
     case 'cpp':
       tmp  = ''
@@ -23,7 +23,7 @@ function genEnvironment(language,files,uuid) {
       for (let i = 0; i < files.length; i++) {
         fs.writeFileSync('./code/'+ uuid +'/'+files[i].name, files[i].code,{autoClose: true})
         fileNames.push('./code/'+ uuid +'/'+files[i].name);
-        // if (files[i].name.split('.').pop() == 'cpp') 
+        if (files[i].name.split('.').pop() == 'cpp')
         tmp += files[i].name; tmp += ' '
       }
       // creates the tar archive to pass in the putArchive function before starting the container
@@ -36,10 +36,11 @@ function genEnvironment(language,files,uuid) {
 }
 
 class File{
-  constructor(name, text){
+  constructor(name, text, projectId){
     this.name = name
     let buff = new Buffer.from(text, 'base64')
     this.code = buff.toString('ascii')
+    this.projectId = projectId
   }
 }
 
