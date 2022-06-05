@@ -3,10 +3,15 @@ const _ = require('underscore')
 
 const Schema = mongoose.Schema
 
+const TIMEOUT_STATUS = 30
+
+const opts = { toJSON: { virtuals: true } }
+
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  username: { type: String, required: true }
-})
+  username: { type: String, required: true },
+  last_activity: { type: Date, default: new Date() }
+}, opts)
 
 const profileSchema = new mongoose.Schema({
   user: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
@@ -21,8 +26,15 @@ const profileSchema = new mongoose.Schema({
   friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   friend_requests: [
     { type: Schema.Types.ObjectId, ref: 'FriendRequest' }
-  ]
+  ],
 })
+
+userSchema.virtual('status').get(function() {
+  var checkTime = new Date();
+  checkTime.setSeconds(checkTime.getSeconds() - TIMEOUT_STATUS)
+
+  return this.last_activity >= checkTime ? "online" : "offline";
+});
 
 const user = mongoose.model('User', userSchema)
 profileSchema.pre('save', function (next) {

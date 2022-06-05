@@ -14,6 +14,12 @@ userRoutes.get('/checkProfile', (req, res) => {
   })
 })
 
+userRoutes.post('/setLastActivity', getUser, async (req, res) => {
+  req.user.last_activity = new Date()
+  await req.user.save()
+  return res.status(200).json({status: "ok"})
+})
+
 /*
 The first configuration api create the user and profile obj for a user that has signin with Auth0
 and populates the profile attributes
