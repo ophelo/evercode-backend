@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const Profile = require('../user/model');
+const CollaborativeRequest = require('../coll_message/models/collRequest');
 
  // ---- PROJECT SCHEMA ---- //
 
@@ -16,6 +17,7 @@ const projectSchema = new mongoose.Schema({
   body: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File'}],
 
   isCollaborative: { type: Boolean, default: false }, // if true collaborativeUser list exist, default false -->personal project
+  collab_requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CollaborativeRequest', required: true }],
 
   shared: { type: Boolean, default: false }, // if true meta used, default false -->private project
 

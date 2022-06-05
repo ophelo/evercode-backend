@@ -37,18 +37,6 @@ const profileSchema = new mongoose.Schema({
  
  // ---- COLLABORATIVE REQUEST SCHEMA ---- // 
 
-const collaborativeRequestSchema = new mongoose.Schema({
-  type: { type: String, default: 'SEND', enum: ['SEND', 'RECEIVED'] },
-  sender: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
-  project: { type: Schema.Types.ObjectId, required: true, ref: 'Project' },
-  send_at: {
-    type: Date,
-    default: function now () {
-      return new Date()
-    }
-  }
-})
-
 
 const user = mongoose.model('User', userSchema)
 const friendRequest = mongoose.model('FriendRequest', friendRequestSchema)
