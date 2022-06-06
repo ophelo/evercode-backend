@@ -19,8 +19,7 @@ metaSchema.methods.editStatus = async function (type) {
       default:
         break;
     }
-  }
-  if(type.downVote) {
+  } else if(type.downVote) {
     switch (type.downVote.toString()) {
       case 'up':
         this.downVote += 1
@@ -31,9 +30,9 @@ metaSchema.methods.editStatus = async function (type) {
       default:
         break;
     }
+  } else {
+    return undefined
   }
-  if(type.copied) this.copied += 1
-  if(type.views) this.views += 1
   return await this.save()
 }
 
