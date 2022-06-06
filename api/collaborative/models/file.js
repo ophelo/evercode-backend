@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Project = require('./project');
 
 const fileSchema = new mongoose.Schema({
   fileName: { type: String, required: true },
@@ -23,13 +24,13 @@ fileSchema.methods.saveFile = async function (file) {
 fileschema.methods.pushFile = async function (projId) {
   this.project = projId
   await this.save()
-  await project.updateOne({_id: projId},{
+  await Project.updateOne({_id: projId},{
     $push: {body: this._id}
   });
 }
 
 fileschema.methods.pullFile = async function () {
-  await project.updateOne({_id: this.project},{
+  await Project.updateOne({_id: this.project},{
     $pull: {body: this._id}
   });
 }
