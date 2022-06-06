@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Profile, User } = require('../user/model');
+const Comment = require('../comment/model')
 // const File = require('./modelFile');
 
 const projectSchema = new mongoose.Schema({
@@ -43,7 +44,7 @@ projectSchema.pre('remove', async function(next) {
   next();
 })
 
-projectSchema.virtual('Votes').get(function(){ return this.upVotethis.downVote})
+projectSchema.virtual('Votes').get(function(){ return this.upVote - this.downVote})
 
 const Project = mongoose.model('Project', projectSchema)
 

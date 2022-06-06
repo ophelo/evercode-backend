@@ -100,7 +100,7 @@ projectRoutes.get('/view/my', async (req, res) => {
 })
 
 // global research
-projectRoutes.get('/search', async (req, res) => {
+projectRoutes.get('/search/Global', async (req, res) => {
   try {
     let projects
     if (req.body.keyWord) {
@@ -242,6 +242,16 @@ projectRoutes.post('/:_id/addFile', getProject, async (req, res) => {
     res.status(500).json({ message: err.message })
   }
 })
+
+projectRoutes.get('/all/get', async (req, res) => {
+  try{
+    const project = await Project.find();
+      //if (project !== null && project.typ)
+    res.json(project)
+  }catch(err){ return res.status(500).json({ message: err.message })}
+})
+
+
 
 async function getProject (req, res, next) {
   let project

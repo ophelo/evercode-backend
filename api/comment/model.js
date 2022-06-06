@@ -9,29 +9,35 @@ const commentSchema = new mongoose.Schema({
 })
 
 function commentValidator (val) {
-  return val < 150
+  return val.length < 250
 }
 
-commentSchema.pre('remove', async function(next){
-  const comments = await Comment.findMany({ _id: { $in: this.reference } });
-  await Comment.removeMany( comments );
-  next();
+commentSchema.pre('remove', async function(){
+  await Comment.findOneAndRemove({ _id: { $in: this.reference } });
 })
-
 commentSchema.methods.newComment = async function(idProject){
-  await Project.updateOne({_id: idProject },{ $push: { comments: this._id}})
+ await Project.updateOne({_id: idProject },{ $push: { comments: this._id}})
 }
 
 commentSchema.methods.replyComment = async function(idComment){
-  await Comment.updateOne({_id: idComment },{ $push: { reference: this._id}})
+ await Comment.findByIdAndUpdate({_id: idComment },{ $push: { reference: this._id}})
 }
-
+/*
 commentSchema.pre('find', async function(next){
-  const comments = await Comment.findMany({ _id: { $in: this.reference } });
-  req.comments = comments
+  console.log("trigger")
+  if(this.reference != null ){
+  const comments = await Comment.find({ _id: { $in: this.reference } });
+  res.comments += comments
+  console.log("ci passo")
+  }
   next();
 })
-
+commentSchema.methods.findReplyes = async function(_id){
+  const comments = await Comment.find({ _id: { $in: this.reference } });
+  res.comments += comments
+  console.log("ci passo")
+}
+*/
 const Comment = mongoose.model('Comment', commentSchema)
 
 module.exports = Comment

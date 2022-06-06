@@ -38,4 +38,13 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
   }
 })
 
+userRoutes.post('/new', async (req, res) => {
+
+  const user = new User({ email: "ciao@due", username: "prova" })
+  const profile = new Profile({user: user._id})
+  const newUser = await user.save()
+  const newProfile = await profile.save()
+ res.json(newProfile)
+})
+
 module.exports = userRoutes

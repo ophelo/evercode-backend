@@ -1,11 +1,11 @@
 const express = require('express')
-const Project = require('./model')
+const Project = require('../project/model')
 const escapeStringRegexp = import('escape-string-regexp')
 const { User, Profile } = require('../user/model')
 const { param } = require('../project/routes')
 const { find } = require('underscore')
-const Reaction = require('./reaction')
-const commentRoutes = express.Router()
+const Reaction = require('./model')
+const reactionRoutes = express.Router()
 
 //new reaction
 reactionRoutes.post(':_id/addReaction', async (req, res) =>{
