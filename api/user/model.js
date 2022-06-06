@@ -24,9 +24,8 @@ const profileSchema = new mongoose.Schema({
   },
   projects: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
   friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  friend_requests: [
-    { type: Schema.Types.ObjectId, ref: 'FriendRequest' }
-  ],
+  friend_requests: [{ type: Schema.Types.ObjectId, ref: 'FriendRequest' }],
+  collaborative_requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CollaborativeRequest', unique: true }],
 })
 
 userSchema.virtual('status').get(function() {
@@ -36,15 +35,24 @@ userSchema.virtual('status').get(function() {
   return this.last_activity >= checkTime ? "online" : "offline";
 });
 
-const user = mongoose.model('User', userSchema)
+profileSchema.methods.checkProjects = async function (val){
+  this.projects.forEach(project => { if (project.toString() === val.toString()) return true})
+  return false
+}
+
 profileSchema.pre('save', function (next) {
   this.friends = _.uniq(this.friends)
   next()
 })
 
+const user = mongoose.model('User', userSchema)
+const friendRequest = mongoose.model('FriendRequest', friendRequestSchema)
+const collRequest = mongoose.model('CollaborativeRequest', collaborativeRequestSchema)
 const profile = mongoose.model('Profile', profileSchema)
 
 module.exports = {
   User: user,
-  Profile: profile
+  Profile: profile,
+  FriendRequest: friendRequest,
+  CollaborativeRequest: collRequest
 }
