@@ -39,9 +39,9 @@ exports.request_list = async (req, res) => {
     .populate({
       path: 'collaborative_requests',
       select: '-__v -send_at',
-      match: type ? {sender: req.user._id } : { receiver: req.user._id},
+      match: {receiver: req.user._id},
       populate: {
-        path: type ? 'receiver' : 'sender',
+        path: 'project',
         select: '-__v'
       }
     })
