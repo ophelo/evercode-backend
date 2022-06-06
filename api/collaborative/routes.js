@@ -16,7 +16,7 @@ projectRoutes2.post('/add', async (req, res) => {
     title: req.body.title,
     owners: [ user._id ],
     language: req.body.language,
-    description: req.body.description,
+  description: req.body.description,
     shared: req.body.shared
   })
 
@@ -37,7 +37,7 @@ projectRoutes2.post('/addFile/:progId', async (req, res) => {
   const file = new File({
     fileName: req.body.name,
     code: req.body.code,
-    project: req.params.progId
+  project: req.params.progId
   })
   const project = await Project.findById(req.params.progId)
   try {
@@ -55,9 +55,7 @@ projectRoutes2.get('/:_id', getProject, async (req, res) => {
       email: req.auth['https://evercode.com/email']
     })
     // if (user._id.toString() !== res.project.owner.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
-    let isOwner = false
-    for (let owner in res.project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
-    if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
+    if (!res.project.checkOwners(user._id)) return res.status(403).json({ message: 'Forbidden' })
   }
   return res.status(200).json(res.project)
 })
@@ -68,16 +66,22 @@ projectRoutes2.get('/owner/:owner', async (req, res) => {
     const user = await User.findOne({
       email: req.auth['https://evercode.com/email']
     })
-    const projects = await Project.find({ owner: req.params.owner })
+    const profile = Profile.findOne({user: usevalr._id})
+    const projects = profile.projects
     if (projects) {
-      const filteredProjects = projects.filter(val => val.shared || (!val.shared && req.params.owner.toString() === user._id.toString()))
+      const filteredProjects = projects.filter(val => {
+        let proj = await Project.findById(val)
+        if(proj.shared || (!proj.shared && proj.checkOwners(user._id))) return true
+        return false
+      })
       const deserializedProject = filteredProjects.map((val) => {
+        let proj = await Project.findById(val)
         return {
-          title: val.title,
-          language: val.language,
-          description: val.description,
-          date: val.date,
-          body: val.body
+          title: proj.title,
+          language: proj.language,
+          description: proj.description,
+          date: proj.date,
+          body: proj.body
         }
       })
       return res.status(200).json(deserializedProject)
@@ -145,11 +149,9 @@ projectRoutes2.get('/:_id/viewFiles', getProject, async (req, res) => {
     const user = await User.findOne({
       email: req.auth['https://evercode.com/email']
     })
-    let isOwner = false
-    for (let owner in res.project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
-    if (!res.project.shared && isOwner) { return res.status(403).json({ message: 'Forbidden' }) }
-    const files = await File.find({ _id: { $in: res.project.body } })
-    res.status(200).json(files)
+    if (!res.project.shared && !res.project.checkOwners(user._id)) { return res.status(403).json({ message: 'Forbidden' }) }
+    const file = await File.find({ _id: { $in: res.project.body } })
+    res.status(200).json(file)
   } catch (err) {
     res.status(500).json({ message: err.message })
   }
@@ -250,23 +252,16 @@ projectRoutes2.patch('/:_id', getProject, async (req, res) => {
 })
 
 // save code on file
-projectRoutes2.patch('/:_id/file/:idFile', getProject, async (req, res) => {
+projectRoutes2.patch('/:_id/save/file/:idFile', getProject, async (req, res) => {
   try {
-    const user = await User.findOne({
-      email: req.auth['https://evercode.com/email']
-    })
+    let project = res.project
+    const user = project.getMe()
     // if (res.project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
-    // semaphore
-    let isOwner = false
-    for (let owner in res.project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
-    if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
+    if (!project.checkOwners(user._id)) return res.status(403).json({ message: 'Forbidden' })
       const file = await File.findById(req.params.idFile)
-    if (file.isUsed) res.status(403).json({message: 'file in unavailable state'})
-    file.isUsed = true
-      file.fileName = req.body.fileName
-      file.code = req.body.code
+      const updatedFile = file.saveFile(req.file)
+    if (file == null) res.status(403).json({message: 'file in unavailable state'})
       res.project.date = Date.now()
-      const updatedFile = await file.save()
       res.status(200).json(updatedFile)
   } catch (err) {
     res.status(500).json({ message: err.message })
@@ -280,9 +275,7 @@ projectRoutes2.post('/:_id/addFile', getProject, async (req, res) => {
       email: req.auth['https://evercode.com/email']
     })
     const project = await Project.findById(req.params._id)
-  let isOwner = false
-  for (let owner in project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
-  if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
+  if (!project.checkOwners(user._id)) return res.status(403).json({ message: 'Forbidden' })
     // if (project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
 
     const file = new File({
@@ -309,11 +302,9 @@ projectRoutes2.post('/:_id/addOwner/:idOwner', getProject, async (req, res) => {
     const project = await Project.findById(req.params._id)
     // if (project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
     if (!project.isCollaborative) {
-      return res.status(403).json({ message: 'Forbidden' })
+      return res.status(403).json({ message: 'Project not collaborative' })
     }
-    let isOwner = false
-    for (let owner in project.owners) if (user._id.toString() === owner.toString()) { isOwner = true; break }
-    if (!isOwner) return res.status(403).json({ message: 'Forbidden' })
+    if (!project.checkOwners(user._id)) return res.status(403).json({ message: 'Forbidden' })
     res.project.owners.push(req.params.idOwner)
       await project.save()
   } catch (err) {
@@ -348,21 +339,19 @@ projectRoutes2.post('/copyProject/:_id/', getProject, async (req, res) => {
     })
 
     const profile = await Profile.findOne({user: user._id})
-
-    const project = await Project.findById(req.params._id)
     // if (project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
-    if (!project.shared) return res.status(403).json({ message: 'Forbidden' })
+    if (!res.project.shared) return res.status(403).json({ message: 'Forbidden' })
 
-    project.meta.copied += 1
+    res.project.meta.copied += 1
     // creation of new copied project with new owner
     const newProject = new Project({
-      title: project.title,
+      title: res.project.title,
       owners: [user._id],
-      language: project.language,
-      description: project.description
+      language: res.project.language,
+      description: res.project.description
     })
       // copy of single files inside project
-    for (const file in project.body) {
+    for (const file in res.project.body) {
       newProject.body.push(new File({
         fileName: file.fileName,
         project: newProject._id,
@@ -370,9 +359,9 @@ projectRoutes2.post('/copyProject/:_id/', getProject, async (req, res) => {
       }))
     }
     //add new Project to owners list
-    profile.projects.push(newProject)
+    profile.projects.push(newProject._id)
     
-      await project.save()
+      await res.project.save()
       await newProject.save()
   } catch (err) {
     res.status(500).json({ message: err.message })

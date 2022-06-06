@@ -1,7 +1,7 @@
 const mongoose = require('mongoose')
 const _ = require('underscore')
 const { Profile } = require('../../user/model')
-const { Project } = require('../../collaborative/model')
+const { Project } = require('../../collaborative/models/project')
 
 const Schema = mongoose.Schema
 
@@ -69,7 +69,7 @@ collRequestSchema.methods.refuse = async function () {
 
 const collRequest = mongoose.model('CollaborativeRequest', collRequestSchema)
 
-collRequest.collection.createIndex({ sender: 1, receiver: 1 }, { unique: true })
+collRequest.collection.createIndex({ sender: 1, receiver: 1, project: 1 }, { unique: true })
 
 async () => {
   await collRequest.syncIndexes()

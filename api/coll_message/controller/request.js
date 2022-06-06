@@ -15,7 +15,7 @@ exports.request_delete = async (req, res) => {
 exports.request_send = async (req, res) => {
   await CollaborativeRequest.create({ sender: req.user._id, receiver: req.params.receiverId, project: req.params.projectId  })
     .then(async cr => {
-      await fr.linkProject()
+      await cr.linkProject()
       return res.status(200).json(cr)
     })
     .catch(err => {
@@ -35,7 +35,7 @@ exports.request_list = async (req, res) => {
     default:
       return res.status(400).json({error: "bad request"})
   }
-  const profile = await Profile.findOne({ user: req.user._id }, 'friend_requests -_id')
+  const profile = await Profile.findOne({ user: req.user._id }, 'collaborative_requests -_id')
     .populate({
       path: 'collaborative_requests',
       select: '-__v -send_at',
@@ -46,7 +46,7 @@ exports.request_list = async (req, res) => {
       }
     })
   if (!profile) return res.status(404).json({error: "No profile found!"})
-  return res.status(200).json(profile.friend_requests)
+  return res.status(200).json(profile.collaborative_requests)
 }
 
 exports.request_action = async (req, res) => {

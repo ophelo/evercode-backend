@@ -34,9 +34,11 @@ const profileSchema = new mongoose.Schema({
   ],
   collaborative_requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CollaborativeRequest', unique: true }],
 })
- 
- // ---- COLLABORATIVE REQUEST SCHEMA ---- // 
 
+profileSchema.methods.checkProjects = async function (val){
+  this.projects.forEach(project => { if (project.toString() === val.toString()) return true})
+  return false
+}
 
 const user = mongoose.model('User', userSchema)
 const friendRequest = mongoose.model('FriendRequest', friendRequestSchema)
