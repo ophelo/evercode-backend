@@ -5,6 +5,7 @@ const Comment = require('./comment');
 const Meta = require('./meta');
 const File = require('./file');
 const { methods } = require('underscore');
+const { link } = require('fs');
 
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true }, // to exist a project must have a title
@@ -60,6 +61,26 @@ projectSchema.methods.setCollaborative = async function (val) {
 projectSchema.methods.getCollaborative = async function () {
   return this.isCollaborative
 }
+
+projectSchema.methods.setShared = async function (val) {
+  if (val.toString() == 'true') this.shared = true
+  this.shared = false
+  return await this.save()
+}
+
+projectSchema.methods.getShared = async function () {
+  return this.shared
+}
+
+projectSchema.methods.setLink = async function (link) {
+  this.link = link
+  return await this.save()
+}
+
+projectSchema.methods.getLink = async function () {
+  return this.link
+}
+
  // ---- ON OWNERS ---- //
 
 projectSchema.methods.checkOwners = async function (_id) {
