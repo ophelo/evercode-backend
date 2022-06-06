@@ -1,7 +1,25 @@
 const express = require('express')
+
+const { getUser } = require('../middleware/auth')
+const { management } = require('../../config/auth')
 const { User, Profile, FriendRequest, CollaborativeRequest } = require('./model')
 
 const userRoutes = express.Router()
+
+userRoutes.get('/checkProfile', (req, res) => {
+  const userObj = req.auth;
+  management.getUser({id: userObj.sub}, (err,user) => {
+    if(err) return res.status(500).json({error: "broken connection with auth0"})
+    if(user.user_metadata?.first_config) return res.status(200).json({status: true});
+    return res.status(200).json({status: false})
+  })
+})
+
+userRoutes.post('/setLastActivity', getUser, async (req, res) => {
+  req.user.last_activity = new Date()
+  await req.user.save()
+  return res.status(200).json({status: "ok"})
+})
 
 /*
 The first configuration api create the user and profile obj for a user that has signin with Auth0
@@ -11,8 +29,10 @@ and populates the profile attributes
 userRoutes.post('/firstConfig', async (req, res, next) => {
   const userObj = req.auth
   try {
-    let user = await User.findOne({
+    let user = await User.findOneAndUpdate({
       email: userObj['https://evercode.com/email']
+    },{
+      $set: { username: req.body.username }
     })
     if (!user) {
       user = await User.create({
@@ -30,15 +50,28 @@ userRoutes.post('/firstConfig', async (req, res, next) => {
       profile = await Profile.create({
         user: user._id,
         fav_lng: req.body.fav_lng,
-        bio: req.body.bio
+        bio: req.body.bio,
+        friend_requests: []
       })
     }
-    return res.status(200).json({ status: 'ok' })
+    console.log(profile)
+    management.updateUserMetadata({id: userObj.sub},{first_config: true}, (err,user) => {
+      console.log(err)
+      if (err) return res.status(500).json({error: "auth0 connection failed!"})
+      console.log(user)
+      return res.status(200).json({status: 'ok'})
+    })
   } catch (err) {
     next(err)
   }
 })
 
+userRoutes.get('/me', getUser, async (req,res) => {
+  const profile = await Profile.findOne({user: req.user._id})
+    .populate('user')
+  if (!profile) return res.status(404).json({error: "No profile found!"})
+  return res.status(200).json(profile);
+})
 /*
 The send friend request send a friend request to a user in order
 to add later to the circle of friends
