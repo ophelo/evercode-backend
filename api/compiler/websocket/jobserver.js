@@ -9,11 +9,13 @@ const tar = require('tar');
 const Mess = {
   START: "start",
   FILE: "file",
-  STOP: "stop"
+  STOP: "stop",
+  STDIN: "stdin"
 };
 
 function genEnvironment(language,files,uuid) {
   let tmp
+  // let map = []
   switch (language) {
     case 'cpp':
       tmp  = ''
@@ -21,7 +23,7 @@ function genEnvironment(language,files,uuid) {
       for (let i = 0; i < files.length; i++) {
         fs.writeFileSync('./code/'+ uuid +'/'+files[i].name, files[i].code,{autoClose: true})
         fileNames.push('./code/'+ uuid +'/'+files[i].name);
-        // if (files[i].name.split('.').pop() == 'cpp') 
+        if (files[i].name.split('.').pop() == 'cpp')
         tmp += files[i].name; tmp += ' '
       }
       // creates the tar archive to pass in the putArchive function before starting the container
@@ -34,10 +36,11 @@ function genEnvironment(language,files,uuid) {
 }
 
 class File{
-  constructor(name, text){
+  constructor(name, text, projectId){
     this.name = name
     let buff = new Buffer.from(text, 'base64')
     this.code = buff.toString('ascii')
+    this.projectId = projectId
   }
 }
 
@@ -72,7 +75,7 @@ const WsCompilerServer = async (expressServer) => {
       const [_path, params] = connectionRequest?.url?.split("?");
       const connectionParams = queryString.parse(params);
 
-      let state = 0
+      let state = "none"
       let uuid = uuidv4()
       let _contId
       let files = []
@@ -87,22 +90,25 @@ const WsCompilerServer = async (expressServer) => {
             let env = genEnvironment(message.language,files,uuid)
             console.log(env);
             // const code = message.payload;
-            state = 1
+            state = "write"
             websocketConnection.send(JSON.stringify({type:"info",msgId:uuidv4(),data:"compiling"}))
             const writableStream = new Stream.Writable()
+            const readableStream = new Stream.Readable()
             writableStream._write = (chunk, encoding, next) => {
               websocketConnection.send(JSON.stringify({type:"stream",msgId:uuidv4(),data:chunk.toString()}));
               next();
             }
             writableStream.on('close', () => {
               websocketConnection.send(JSON.stringify({type:"stop",msgId:uuidv4(),data:""}))
-              state = 0
+              state = "none"
               fs.rmSync('./code/'+ uuid, { recursive: true, autoClose: true });
               files = [];
             })
             docker.createContainer({
               Image: message.language + 'compiler',
-              Tty: true,
+              Tty: false,
+              AttachStdin: true,
+              OpenStdin: true,
               HostConfig: {
                 AutoRemove: true,
               },
@@ -124,6 +130,13 @@ const WsCompilerServer = async (expressServer) => {
                 stream.pipe(writableStream);
               });
 
+              container.attach({stream: true, stdin: true}, function (err, stream) {
+                if (err){
+                  return console.error(err);
+                }
+                readableStream.pipe(stream);
+              });
+
               container.start(function (err, data) {
                 if (err){
                   return console.error(err);
@@ -142,6 +155,8 @@ const WsCompilerServer = async (expressServer) => {
                 console.log(data)
               }))
             }
+            break;
+            case Mess.STDIN:
             break;
           default:
             console.log('Message not recognized')
