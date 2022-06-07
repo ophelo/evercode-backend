@@ -62,7 +62,8 @@ commentRoutes.delete('/:_id/delete/:_idComment', getComment ,async (req, res) =>
 if (user._id.toString() === req.comment.commentor.toString() || req.body.owner.toString() === user._id.toString()) { 
     try{
       await Project.updateOne({ _id: req.params._id }, { $pull: { comments: req.params._idComment }})
-      await Comment.findByIdAndRemove(req.params._idComment);
+      const comment = await Comment.findById(req.params._idComment);
+      comment.delete(comment._id)
       return res.json({ message: 'Deleted comment' })
     }catch(err){
       return res.status(500).json({ message: err.message })
@@ -80,9 +81,13 @@ commentRoutes.get('/:_id/allComment', async (req, res) => {
 
 commentRoutes.get('/:_idComment/getReplys', getComment ,async (req, res) => {
   try{
-    const comments = await Comment.find({ _id: { $in: res.comment.reference }})
-    if(comments == null){ return res.status(404).json({"error": "there no comments"})}
-    else{ return res.status(200).json(comments) }
+    const comment = await Comment.findById( req.params._idComment,'-_id reference')
+    .populate({
+      path: 'reference',
+      select: '-__v'
+  })
+    if(comment == null){ return res.status(404).json({"error": "there no comments"})}
+    else{ return res.status(200).json(comment.reference) }
   }catch(err){ return res.status(400).json({ message: err.message })}
 })
 

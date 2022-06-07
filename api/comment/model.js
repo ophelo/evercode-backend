@@ -13,7 +13,8 @@ function commentValidator (val) {
 }
 
 commentSchema.pre('remove', async function(){
-  await Comment.findOneAndRemove({ _id: { $in: this.reference } });
+  const comments = await Comment.find({ _id: { $in: this.reference } });
+  await Comment.deleteMany(comments._id)
 })
 commentSchema.methods.newComment = async function(idProject){
  await Project.updateOne({_id: idProject },{ $push: { comments: this._id}})
@@ -22,22 +23,7 @@ commentSchema.methods.newComment = async function(idProject){
 commentSchema.methods.replyComment = async function(idComment){
  await Comment.findByIdAndUpdate({_id: idComment },{ $push: { reference: this._id}})
 }
-/*
-commentSchema.pre('find', async function(next){
-  console.log("trigger")
-  if(this.reference != null ){
-  const comments = await Comment.find({ _id: { $in: this.reference } });
-  res.comments += comments
-  console.log("ci passo")
-  }
-  next();
-})
-commentSchema.methods.findReplyes = async function(_id){
-  const comments = await Comment.find({ _id: { $in: this.reference } });
-  res.comments += comments
-  console.log("ci passo")
-}
-*/
+
 const Comment = mongoose.model('Comment', commentSchema)
 
 module.exports = Comment
