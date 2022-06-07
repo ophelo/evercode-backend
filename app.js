@@ -6,7 +6,8 @@ const projectRoutes = require('./api/project/routes')
 const friendRoutes = require('./api/friend/routes')
 
 const { jwtCheck } = require('./config/auth')
-
+const commentRoutes = require('./api/comment/routes')
+const reactionRoutes = require('./api/reaction/routes')
 const app = express()
 
 const errController = (err, req, res, next) => {
@@ -28,6 +29,8 @@ app.use(jwtCheck)
 app.use('/api/user', userRoutes)
 app.use('/api/project', projectRoutes)
 app.use('/api/friend', friendRoutes)
+app.use('/api/comment', commentRoutes)
+app.use('/api/reaction', reactionRoutes)
 
 app.use(errController)
 
