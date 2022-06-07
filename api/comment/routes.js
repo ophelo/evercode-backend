@@ -1,20 +1,14 @@
 const express = require('express')
 const Project = require('../project/model')
 const Comment = require('./model')
-const escapeStringRegexp = import('escape-string-regexp')
-const { User, Profile } = require('../user/model')
-const { param } = require('../project/routes')
-const { find } = require('underscore')
+const { User } = require('../user/model')
+const { getUser } = require('../middleware/auth')
 const commentRoutes = express.Router()
 
 
 
-commentRoutes.post('/:_id/addComment', async (req, res) => {
-  const user = await User.findOne({
-    email: req.auth['https://evercode.com/email']
-  })
-
-  await  Comment.create({ commentor: user._id, commentText: req.body.commentText })
+commentRoutes.post('/:_id/addComment', getUser, async (req, res) => {
+  await  Comment.create({ commentor: req.user._id, commentText: req.body.commentText })
     .then( async cm =>{
      await cm.newComment(req.params._id);
      return res.json(cm)
@@ -23,12 +17,8 @@ commentRoutes.post('/:_id/addComment', async (req, res) => {
 })
 
 
-commentRoutes.post('/:_idComment/replyComment', async (req, res) => {
-  const user = await User.findOne({
-    email: req.auth['https://evercode.com/email']
-  })
-
- await Comment.create({ commentor: user._id, commentText: req.body.commentText })
+commentRoutes.post('/:_idComment/replyComment', getUser, async (req, res) => {
+ await Comment.create({ commentor: req.user._id, commentText: req.body.commentText })
     .then( async cm =>{
      await cm.replyComment(req.params._idComment)
       return res.json(cm)
@@ -37,7 +27,7 @@ commentRoutes.post('/:_idComment/replyComment', async (req, res) => {
 
 
 
-commentRoutes.patch('/modify/:_idComment', async (req, res) =>{
+commentRoutes.patch('/modify/:_idComment', getUser, async (req, res) =>{
 
   const user = await User.findOne({
     email: req.auth['https://evercode.com/email']
@@ -53,13 +43,8 @@ else{
 })
 
 
-commentRoutes.delete('/:_id/delete/:_idComment', getComment ,async (req, res) => {
-
-  const user = await User.findOne({
-    email: req.auth['https://evercode.com/email']
-  })
-
-if (user._id.toString() === req.comment.commentor.toString() || req.body.owner.toString() === user._id.toString()) { 
+commentRoutes.delete('/:_id/delete/:_idComment', getUser, getComment, async (req, res) => {
+if (req.user._id.toString() === req.comment.commentor.toString() || req.body.owner.toString() === req.user._id.toString()) { 
     try{
       await Project.updateOne({ _id: req.params._id }, { $pull: { comments: req.params._idComment }})
       const comment = await Comment.findById(req.params._idComment);
@@ -71,7 +56,7 @@ if (user._id.toString() === req.comment.commentor.toString() || req.body.owner.t
 }else { return res.status(403).json({ message: 'Forbidden' }) }
 })
 
-commentRoutes.get('/:_id/allComment', async (req, res) => {
+commentRoutes.get('/:_id/allComment', getUser, async (req, res) => {
   try{
     const project = await Project.findById(req.params._id)
     const comments = await Comment.find({ _id: { $in: project.comments}})
@@ -79,7 +64,7 @@ commentRoutes.get('/:_id/allComment', async (req, res) => {
     else{ return res.status(200).json(comments) }}catch(err){return res.status(400).json({ message: err.message })}
 })
 
-commentRoutes.get('/:_idComment/getReplys', getComment ,async (req, res) => {
+commentRoutes.get('/:_idComment/getReplys', getComment, async (req, res) => {
   try{
     const comment = await Comment.findById( req.params._idComment,'-_id reference')
     .populate({
@@ -89,11 +74,6 @@ commentRoutes.get('/:_idComment/getReplys', getComment ,async (req, res) => {
     if(comment == null){ return res.status(404).json({"error": "there no comments"})}
     else{ return res.status(200).json(comment.reference) }
   }catch(err){ return res.status(400).json({ message: err.message })}
-})
-
-commentRoutes.get('/all', async (req, res) => {
-  const comments = await Comment.find()
-  return res.json(comments)
 })
 
 async function getComment(req,res,next){
