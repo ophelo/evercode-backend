@@ -23,13 +23,6 @@ const projectSchema = new mongoose.Schema({
   shared: { type: Boolean, default: false }, // if true meta used, default false -->private project
 
   meta: { type: mongoose.Schema.Types.ObjectId, ref: 'Meta'},
-  /*meta: {
-    upVote: { type: Number, default: 0 }, // number of upVote >0 only if shared true
-    downVote: { type: Number, default: 0 }, // number of downVote >0 only if shared true
-    copied: { type: Number, default: 0 }, // number of time the document is copied
-    getLink: { type: Number, default: 0 }, // number of time get the link
-    visual: { type: Number, default: 0 } // number of time the project was opened by other user != owner
-  },*/
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }]
 }, opts)
 
