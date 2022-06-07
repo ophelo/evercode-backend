@@ -243,14 +243,6 @@ projectRoutes.post('/:_id/addFile', getProject, async (req, res) => {
   }
 })
 
-projectRoutes.get('/all/get', async (req, res) => {
-  try{
-    const project = await Project.find();
-      //if (project !== null && project.typ)
-    res.json(project)
-  }catch(err){ return res.status(500).json({ message: err.message })}
-})
-
 
 
 async function getProject (req, res, next) {
