@@ -7,6 +7,8 @@ dotenv.config()
 
 const PORT = process.env.PORT || 5000
 
+connectToServer()
+
 const server = app.listen(PORT, () => {
   console.log(`Starto il server sulla porta: ${PORT}!`)
 })

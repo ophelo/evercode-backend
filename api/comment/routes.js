@@ -37,13 +37,13 @@ commentRoutes.post('/:_idComment/replyComment', async (req, res) => {
 
 
 
-commentRoutes.patch(':_id/modify/:_idComment', async (req, res) =>{
+commentRoutes.patch('/modify/:_idComment', async (req, res) =>{
 
   const user = await User.findOne({
     email: req.auth['https://evercode.com/email']
   })
 
-if (user._id.toString() !== req.body.commentor.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
+if (user._id.toString() !== req.body.commentor) { return res.status(403).json({ message: 'Forbidden' }) }
 else{
   try{
     await Comment.updateOne({ _id: req.params._idComment }, {commentText: req.body.commentText })
