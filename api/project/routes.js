@@ -256,7 +256,7 @@ projectRoutes.get('/all/get', async (req, res) => {
 async function getProject (req, res, next) {
   let project
   try {
-    project = await Project.findById(req.params._id).populate('meta')
+    project = await Project.findById(req.params._id).populate('meta').populate('comments')
     if (project == null) {
       return res.status(404).json({ message: 'Cannot find project ' })
     }

@@ -27,13 +27,8 @@ commentRoutes.post('/:_idComment/replyComment', getUser, async (req, res) => {
 
 
 
-commentRoutes.patch('/modify/:_idComment', getUser, async (req, res) =>{
-
-  const user = await User.findOne({
-    email: req.auth['https://evercode.com/email']
-  })
-
-if (user._id.toString() !== req.body.commentor) { return res.status(403).json({ message: 'Forbidden' }) }
+commentRoutes.patch('/:_idComment/modify', getUser, async (req, res) =>{
+if (req.user._id.toString() !== req.body.commentor) { return res.status(403).json({ message: 'Forbidden' }) }
 else{
   try{
     await Comment.updateOne({ _id: req.params._idComment }, {commentText: req.body.commentText })
@@ -56,7 +51,7 @@ if (req.user._id.toString() === req.comment.commentor.toString() || req.body.own
 }else { return res.status(403).json({ message: 'Forbidden' }) }
 })
 
-commentRoutes.get('/:_id/allComment', getUser, async (req, res) => {
+commentRoutes.get('/:_id/Comment', getUser, async (req, res) => {
   try{
     const project = await Project.findById(req.params._id)
     const comments = await Comment.find({ _id: { $in: project.comments}})
