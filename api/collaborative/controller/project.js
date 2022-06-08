@@ -21,7 +21,7 @@ exports.project_create = async (req,res) => {
 
 exports.project_delete = async (req, res) => {
   try {
-    // if (await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
+    if (await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     await File.deleteMany({ _id: { $in: req.project.body } })
     await req.project.remove();
     res.json({ message: 'Deleted Project' })
@@ -33,7 +33,7 @@ exports.project_delete = async (req, res) => {
 exports.add_file = async (req,res) => {
   try {
     let proj = await Project.findById(req.params.progId)
-    await proj.checkOwners(req.user._id)
+    if(!await proj.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     const file = new File({
       fileName: req.body.fileName,
       code: req.body.code,
@@ -50,6 +50,7 @@ exports.add_file = async (req,res) => {
 
 exports.project_list = async (req, res) => {
   try {
+    if(!await proj.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     const profile = await Profile.findOne({user: req.user._id})
       .populate({
         path: 'projects',
@@ -88,25 +89,28 @@ exports.owner_projects = async (req, res) => {
 }
 
 exports.check_access = async (req, res) => {
+  try {
   if (!(req.project.shared || await req.project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
   let project = await req.project.populate({
     path: 'owners',
     select: 'username'
   })
   return res.status(200).json(project)
-}
-
-exports.get_project = async (req,res,next) => {
-  let project
-  try {
-    project = await Project.findById(req.params._id)
-    if (project == null) {
-      return res.status(404).json({ message: 'Cannot find project ' })
-    }
   } catch (err) {
     return res.status(400).json({ message: err.message })
   }
+}
+
+exports.get_project = async (req,res,next) => {
+  try {
+  if(!await proj.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
+  let project
+  project = await Project.findById(req.params._id)
+  if (project == null) return res.status(404).json({ message: 'Cannot find project ' })
   req.project = project
+  } catch (err) {
+    return res.status(400).json({ message: err.message })
+  }
   next()
 }
 
@@ -182,9 +186,21 @@ exports.copy_project = async (req, res) => {
   }
 }
 
+exports.add_owner = async (req,res) => {
+  try {
+    if(!await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
+    if(await req.project.checkOwners(req.params.idOwner)) return res.status(403).json({ message: 'Already Owner' })
+    await req.project.owners.push(req.params.idOwner)
+    await req.project.upDate()
+    await req.project.save()
+    return res.status(201).json(req.project);
+  } catch (err) {
+    return res.status(400).json({ message: err.message })
+  }
+}
+
 exports.remove_owner = async (req, res) => {
   try {
-    // if (res.project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
     if (!await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     let index = await req.project.owners.indexOf(req.params.idOwner)
     if (index > 0 && index < req.project.owners.length) req.project.owners.splice(index,1)
@@ -221,6 +237,7 @@ exports.set_shared = async (req, res) => {
     return res.status(500).json({ message: err.message })
   }
 }
+
 exports.update_project = async (req, res) => {
    try {
   if (!await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
@@ -242,7 +259,6 @@ exports.update_project = async (req, res) => {
 
 exports.save_code = async (req, res) => {
   try {
-    // if (res.project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
     if (!await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     const file = await File.findById(req.params.idFile)
     file.code = req.body.code

@@ -40,7 +40,9 @@ projectRoutes2.patch('/:_id', getUser, ProjectController.get_project, ProjectCon
 // save code on file
 projectRoutes2.patch('/:_id/save/file/:idFile', getUser, ProjectController.get_project, ProjectController.save_code) 
 
-projectRoutes2.patch('/:_id/owner/:idOwner', getUser, ProjectController.get_project, ProjectController.save_code) 
+//add a owner
+projectRoutes2.patch('/:_id/owner/:idOwner', getUser, ProjectController.get_project, ProjectController.add_owner) //da testare
+
 //remove a owner
 projectRoutes2.delete('/:_id/owner/:idOwner', getUser, ProjectController.get_project, ProjectController.remove_owner) //da testare
 

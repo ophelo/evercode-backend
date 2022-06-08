@@ -68,19 +68,10 @@ projectSchema.methods.checkOwner = async function (_id) {
   return false
 }
 
- // ---- ON FILES ---- //
-
-// projectSchema.methods.getFile = async function (fileId) {
-//   let id = this.body.find(file => file._id.toString() === fileId.toString());
-//   if (id == null) return id
-//   return await File.findById(id)
-// }
-
 function descriptionValidator (val) {
   // validator check if description is too big
   return val.length < 250
 }
-
 
 projectSchema.pre('remove', async function(next) {
   await Profile.updateMany({user: { $in: this.owners }},{
