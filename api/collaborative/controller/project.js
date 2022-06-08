@@ -50,7 +50,6 @@ exports.add_file = async (req,res) => {
 
 exports.project_list = async (req, res) => {
   try {
-    if(!await proj.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     const profile = await Profile.findOne({user: req.user._id})
       .populate({
         path: 'projects',
