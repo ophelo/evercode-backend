@@ -12,7 +12,7 @@ exports.project_create = async (req,res) => {
     })
     await project.upDate()
     await project.addToUser(req.user.id)
-    project.save()
+    await project.save()
     return res.status(201).json(project);
   } catch (err) {
     return res.status(500).json({ message: err.message })
@@ -89,7 +89,11 @@ exports.owner_projects = async (req, res) => {
 
 exports.check_access = async (req, res) => {
   if (!(req.project.shared || await req.project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
-  return res.status(200).json(req.project)
+  let project = await req.project.populate({
+    path: 'owners',
+    select: 'username'
+  })
+  return res.status(200).json(project)
 }
 
 exports.get_project = async (req,res,next) => {
