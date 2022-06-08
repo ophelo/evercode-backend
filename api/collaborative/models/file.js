@@ -4,7 +4,6 @@ const Project = require('./project');
 const fileSchema = new mongoose.Schema({
   fileName: { type: String, required: true },
   isUsed: { type: Number, default: 0 },
-  project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project'},
   code: { type: String, default: 'N{b7j(utCI9' }
 })
 

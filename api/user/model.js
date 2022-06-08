@@ -46,7 +46,12 @@ profileSchema.pre('save', function (next) {
 })
 
 const user = mongoose.model('User', userSchema)
-const friendRequest = mongoose.model('FriendRequest', friendRequestSchema)
+const profile = mongoose.model('Profile', profileSchema)
+
+async () => {
+  profile.syncIndexes()
+  profile.ensureIndexes()
+}
 
 module.exports = {
   User: user,

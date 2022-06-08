@@ -80,8 +80,7 @@ projectRoutes.get('/view/my', async (req, res) => {
     })
     const profile = await Profile.findOne({user: user._id});
     if (profile.projects) {
-      const filteredProjects = await profile.projects.map(async (val) => {
-        const project = await Project.findById(val);
+      const filteredProjects = await profile.projects.map(async (project) => {
         if (!project) return {}
         return {
           id: project._id,

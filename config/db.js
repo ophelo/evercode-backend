@@ -18,6 +18,7 @@ module.exports.connectToServer = function (url) {
     })
     .then(async () => {
       console.log('connected!')
+      // await mongoose.connection.db.dropDatabase()
     })
     .catch((err) => {
       console.log(err)
