@@ -103,9 +103,9 @@ exports.check_access = async (req, res) => {
 
 exports.get_project = async (req,res,next) => {
   try {
-  if(!await proj.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
   let project
   project = await Project.findById(req.params._id)
+  if(!await project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
   if (project == null) return res.status(404).json({ message: 'Cannot find project ' })
   req.project = project
   } catch (err) {
@@ -123,7 +123,7 @@ exports.search = async (req, res) => {
         shared: true,
         $or: [
           { title: { $regex, $options: 'i' } },
-          { description: { $regex, $options: 'i' } }
+          { email: { $regex, $options: 'i' } }
         ]
       })
     } else {

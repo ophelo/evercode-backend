@@ -72,6 +72,24 @@ userRoutes.get('/me', getUser, async (req,res) => {
   if (!profile) return res.status(404).json({error: "No profile found!"})
   return res.status(200).json(profile);
 })
+
+userRoutes.get('/list/:ownerId', getUser, async (req, res) => {
+  try {
+    let users
+    if (req.body.keyWord) {
+      const $regex = escapeStringRegexp(req.body.keyWord)
+      users = await User.findMany({
+        $or: [{ username: { $regex, $options: 'i' } }, { email: { $regex, $options: 'i' } }]
+      })
+    } else {
+      projects = {}
+    }
+    return res.status(200).json(projects)
+  } catch (err) {
+    res.status(500).json({ message: err.message })
+  }
+})
+
 /*
 The send friend request send a friend request to a user in order
 to add later to the circle of friends

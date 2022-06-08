@@ -31,6 +31,10 @@ const friend_request2 = {
   sender: '6298e797ecccbe6bfbcf845f'
 }
 
+const project = {
+
+}
+
 beforeAll(async () => {
   await MongoMemoryServer.create().then((ms) => {
     connectToServer(ms.getUri())
@@ -45,7 +49,7 @@ afterAll(async () => {
   await mongoose.disconnect()
 })
 
-describe('Testing Request list API', () => {
+describe('Testing Collaborative Request list API', () => {
   test('Should return the list of send request', async () => {
     // Populate the database
     await User.create(reqUser)

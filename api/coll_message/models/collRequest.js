@@ -5,7 +5,6 @@ const { Project } = require('../../collaborative/models/project')
 
 const Schema = mongoose.Schema
 
-
 const collRequestSchema = new mongoose.Schema({
   sender: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
   receiver: { type: Schema.Types.ObjectId, required: true, ref: 'User' },
