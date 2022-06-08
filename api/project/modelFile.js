@@ -13,5 +13,5 @@ fileSchema.pre('remove', async function(next){
   });
   next();
 })
-const File = mongoose.model('File', fileSchema)
-module.exports = File
+// const File = mongoose.model('File', fileSchema)
+// module.exports = File

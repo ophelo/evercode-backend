@@ -35,7 +35,7 @@
     "fs": "^0.0.1-security",
     "jwks-rsa": "^2.1.0",
     "mongodb": "^4.4.1",
-    "mongoose": "^6.2.9",
+    "mongoose": "^6.3.6",
     "node-fetch": "2",
     "query-string": "^7.1.1",
     "regex": "^0.1.1",

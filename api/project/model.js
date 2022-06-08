@@ -43,6 +43,6 @@ projectSchema.pre('remove', async function(next) {
 
 projectSchema.virtual('Votes').get(function(){ return this.upVote - this.downVote})
 
-const Project = mongoose.model('Project', projectSchema)
+// const Project = mongoose.model('Project', projectSchema)
 
-module.exports = Project
+// module.exports = Project
