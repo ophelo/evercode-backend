@@ -24,17 +24,6 @@ exports.request_send = async (req, res) => {
 }
 
 exports.request_list = async (req, res) => {
-  let type;
-  switch (req.query?.type){
-    case 'send':
-      type=1
-      break
-    case 'received':
-      type=0
-      break
-    default:
-      return res.status(400).json({error: "bad request"})
-  }
   const profile = await Profile.findOne({ user: req.user._id }, 'collaborative_requests -_id')
     .populate({
       path: 'collaborative_requests',
