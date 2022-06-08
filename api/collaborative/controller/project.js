@@ -203,9 +203,9 @@ exports.remove_owner = async (req, res) => {
     if (!await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     if (!await req.project.checkOwners(req.params.idOwner)) return res.status(400).json({ message: 'User is not an owner' })
     let index = await req.project.owners.indexOf(req.params.idOwner)
-    if (index > 0 && index < req.project.owners.length) req.project.owners.splice(index,1)
+    if (index >= 0 && index < req.project.owners.length) req.project.owners.splice(index,1)
     else return res.status(404).json({ message: 'no owner found with this id'})
-    if (req.project.owners.length < 1) await req.project.remove()
+    if (req.project.owners.length < 1) { await req.project.remove(); return res.status(200).json({ message: 'Removed owner and project' })}
     await req.project.upDate()
     await req.project.save()
     return res.json({ message: 'Removed owner' })
