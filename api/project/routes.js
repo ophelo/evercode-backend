@@ -99,7 +99,7 @@ projectRoutes.get('/view/my', async (req, res) => {
 })
 
 // global research
-projectRoutes.get('/search', async (req, res) => {
+projectRoutes.get('/search/Global', async (req, res) => {
   try {
     let projects
     if (req.body.keyWord) {
@@ -242,10 +242,12 @@ projectRoutes.post('/:_id/addFile', getProject, async (req, res) => {
   }
 })
 
+
+
 async function getProject (req, res, next) {
   let project
   try {
-    project = await Project.findById(req.params._id)
+    project = await Project.findById(req.params._id).populate('meta').populate('comments')
     if (project == null) {
       return res.status(404).json({ message: 'Cannot find project ' })
     }

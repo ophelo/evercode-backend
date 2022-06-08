@@ -48,11 +48,6 @@ profileSchema.pre('save', function (next) {
 const user = mongoose.model('User', userSchema)
 const profile = mongoose.model('Profile', profileSchema)
 
-async () => {
-  profile.syncIndexes()
-  profile.ensureIndexes()
-}
-
 module.exports = {
   User: user,
   Profile: profile,
