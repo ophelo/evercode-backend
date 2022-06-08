@@ -1,7 +1,6 @@
 const express = require('express')
-const Project = require('../project/model')
+const Project = require('../collaborative/models/project')
 const Comment = require('./model')
-const { User } = require('../user/model')
 const { getUser } = require('../middleware/auth')
 const commentRoutes = express.Router()
 

@@ -1,5 +1,4 @@
 const mongoose = require('mongoose');
-const Project  = require('../project/model');
 
 const reactionSchema = new mongoose.Schema({
     reacter: {  type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },

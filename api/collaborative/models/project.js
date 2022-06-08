@@ -59,8 +59,7 @@ projectSchema.methods.setShared = async function (val) {
 
 projectSchema.methods.checkOwners = async function (_id) {
   if (_id == 'undefined') return false
-  await this.owners.forEach(owner => {if (owner.toString() === _id.toString()) return true })
-  return true
+  return this.owners.findIndex((user) => {return user._id.toString() === _id.toString()}) !== -1
 }
 
 projectSchema.methods.checkOwner = async function (_id) {

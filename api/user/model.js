@@ -25,7 +25,7 @@ const profileSchema = new mongoose.Schema({
   projects: [{ type: Schema.Types.ObjectId, ref: 'Project' }],
   friends: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   friend_requests: [{ type: Schema.Types.ObjectId, ref: 'FriendRequest' }],
-  collaborative_requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CollaborativeRequest', unique: true }],
+  collaborative_requests: [{ type: mongoose.Schema.Types.ObjectId, ref: 'CollaborativeRequest' }],
 })
 
 userSchema.virtual('status').get(function() {

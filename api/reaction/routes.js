@@ -1,8 +1,9 @@
 const express = require('express')
-const Project = require('../project/model')
+const Project = require('../collaborative/models/project');
 const { getUser } = require('../middleware/auth')
 const Reaction = require('./model')
-const Meta = require('../project/meta')
+const Meta = require('../collaborative/models/meta');
+
 const reactionRoutes = express.Router()
 
 //new reaction

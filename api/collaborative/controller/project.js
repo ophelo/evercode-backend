@@ -4,54 +4,56 @@ const  Meta = require('../models/meta')
 const { Profile } = require('../../user/model')
 const escapeStringRegexp = import('escape-string-regexp')
 
-exports.project_create = async (req,res) => {
+exports.project_create = async (req, res, next) => {
   try {
     const project = new Project({
       title: req.body.title,
       language: req.body.language,
       description: req.body.description,
     })
-    const meta = await Meta.create({project: req.project._id});
+    const meta = await Meta.create({project: project._id});
     project.meta= meta._id; 
     await project.upDate()
-    await project.addToUser(req.user.id)
+    await project.addToUser(req.user._id)
     await project.save()
     return res.status(201).json(project);
   } catch (err) {
-    return res.status(500).json({ message: err.message })
+    next(err)
   }
 }
 
-exports.project_delete = async (req, res) => {
+exports.project_delete = async (req, res, next) => {
   try {
-    if (await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
+    const check = await req.project.checkOwners(req.user._id)
+    if (!check) return res.status(403).json({ message: 'Forbidden' })
     await File.deleteMany({ _id: { $in: req.project.body } })
     await req.project.remove();
-    res.json({ message: 'Deleted Project' })
+    return res.status(204).json({ message: 'Deleted Project' })
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    next(err)
   }
 }
 
-exports.add_file = async (req,res) => {
+exports.add_file = async (req, res, next) => {
   try {
     let proj = await Project.findById(req.params.progId)
-    if(!await proj.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
+    const check = await proj.checkOwners(req.user._id)
+    if(!check) return res.status(403).json({ message: 'Forbidden' })
     const file = new File({
       fileName: req.body.fileName,
       code: req.body.code,
-      project: req.params._id
+      project: req.params.progId
     })
     await file.pushFile(req.params.progId)
     await proj.upDate()
     await proj.save()
     return res.status(201).json(file);
   } catch (err) {
-    return res.status(400).json({ message: err.message })
+    next(err)
   }
 }
 
-exports.project_list = async (req, res) => {
+exports.project_list = async (req, res, next) => {
   try {
     const profile = await Profile.findOne({user: req.user._id})
       .populate({
@@ -60,12 +62,12 @@ exports.project_list = async (req, res) => {
         select: 'title language description lastSave body owners isCollaborative shared',
         populate: {
           path: 'body'
-    }
+        }
       })
     if(!profile) return res.status(404).json({ message: 'Profile not found' })
     return res.status(200).json(profile.projects)
   } catch (err) {
-    return res.status(500).json({ message: err.message })
+    next(err)
   }
 }
 
@@ -82,6 +84,7 @@ exports.owner_projects = async (req, res) => {
     })
     const projects = profile.projects
     if (projects) {
+      
       projects.forEach(proj => { if(!(proj.shared || proj.checkOwners(req.user._id))) projects.pull(proj) }) // quando lo vedrai deciderai cosa fare con la match, grazie <3
       return res.status(200).json(projects)
     } else return res.status(404).json({ message: 'NO Projects for you' })
@@ -149,6 +152,7 @@ exports.get_files = async (req, res) => {
     const file = await File.find({ _id: { $in: req.project.body } }).populate('fileName', 'code')
     return res.status(200).json(file)
   } catch (err) {
+    console.log(err.name)
     return res.status(500).json({ message: err.message })
   }
 }

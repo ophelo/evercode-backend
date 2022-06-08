@@ -13,6 +13,7 @@ module.exports = {
     res.status = jest.fn().mockReturnValue(res)
     res.json = jest.fn().mockReturnValue(res)
     return res
-  }
-  // mockNext: () => jest.fn()
+  },
+  
+  mockNext: () => jest.fn()
 }
