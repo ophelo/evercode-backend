@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+
 const opts = { toJSON: { virtuals: true } }
 const metaSchema = new mongoose.Schema({
     project: { type: mongoose.Schema.Types.ObjectId, ref: 'Project', },
@@ -6,7 +7,7 @@ const metaSchema = new mongoose.Schema({
     downVote: { type: Number, default: 0 }, // number of downVote >0 only if shared true
     copied: { type: Number, default: 0 }, // number of time the document is copied
     getLink: { type: Number, default: 0 }, // number of time get the link
-    visual: { type: Number, default: 0 } // number of time the project was opened by other user != owner
+    views: { type: Number, default: 0 } // number of time the project was opened by other user != owner
 }, opts);
 
 metaSchema.virtual('Votes').get(function(){ return this.upVote - this.downVote})

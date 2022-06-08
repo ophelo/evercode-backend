@@ -9,7 +9,7 @@ projectRoutes2.post('/add', getUser, ProjectController.project_create)
 
 projectRoutes2.post('/addFile/:progId', getUser, ProjectController.add_file) 
 // project by id
-projectRoutes2.get('/:_id', getUser, ProjectController.get_project, ProjectController.check_access) //non so perché esplode
+projectRoutes2.get('/:_id', getUser, ProjectController.get_project, ProjectController.check_access) //increment views with check
 
 /* by owner id -> title,language,description.. */
 projectRoutes2.get('/owner/:owner', getUser, ProjectController.owner_projects)
@@ -47,6 +47,6 @@ projectRoutes2.patch('/:_id/owner/:idOwner', getUser, ProjectController.get_proj
 projectRoutes2.delete('/:_id/owner/:idOwner', getUser, ProjectController.get_project, ProjectController.remove_owner) //da testare
 
 // copy project
-projectRoutes2.post('/copyProject/:_id/', getUser, ProjectController.get_project, ProjectController.copy_project) //da testare
+projectRoutes2.post('/copyProject/:_id/', getUser, ProjectController.get_project, ProjectController.copy_project) //da testare increment copy
 
 module.exports = projectRoutes2

@@ -9,7 +9,8 @@ const projectSchema = new mongoose.Schema({
     required: true,
     enum: ['cpp', 'javascript', 'python']
   }, // to exist a project need a programming language
-  date: { type: Date, defalult: Date.now() }, // date of created document or last save
+  creationDate: { type: Date, defalult: Date.now() }, // date of created document or last save
+  lastSave: { type: Date }, // date of created document or last save
   description: { type: String, validate: descriptionValidator }, // user define caratteristics of document
   body: [{ type: mongoose.Schema.Types.ObjectId, ref: 'File'}],
 
@@ -22,7 +23,7 @@ const projectSchema = new mongoose.Schema({
 })
 
 projectSchema.methods.upDate = async function () {
-  this.date = Date.now()
+  this.lastSave = Date.now()
   await this.save()
 }
 
@@ -51,7 +52,7 @@ projectSchema.methods.setCollaborative = async function (val) {
 
 projectSchema.methods.setShared = async function (val) {
   if (val.toString() == 'true') this.shared = true
-  else this.shared = false
+    this.shared = false 
   return await this.save()
 }
  // ---- ON OWNERS ---- //

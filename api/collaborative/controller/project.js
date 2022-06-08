@@ -1,5 +1,6 @@
 const Project = require('../models/project')
 const  File = require('../models/file')
+const  Meta = require('../models/meta')
 const { Profile } = require('../../user/model')
 const escapeStringRegexp = import('escape-string-regexp')
 
@@ -10,6 +11,8 @@ exports.project_create = async (req,res) => {
       language: req.body.language,
       description: req.body.description,
     })
+    const meta = await Meta.create({project: req.project._id});
+    project.meta= meta._id; 
     await project.upDate()
     await project.addToUser(req.user.id)
     await project.save()
@@ -54,7 +57,7 @@ exports.project_list = async (req, res) => {
       .populate({
         path: 'projects',
         match: { length: {$gte: 0}},
-        select: 'title language description date body owners isCollaborative shared',
+        select: 'title language description lastSave body owners isCollaborative shared',
         populate: {
           path: 'body'
     }
@@ -72,7 +75,7 @@ exports.owner_projects = async (req, res) => {
       .populate({
       path: 'projects',
       match: { length: {$gte: 0}},
-      select: 'title language description date body',
+      select: 'title language description body lastSave',
       populate: {
         path: 'body'
     }
@@ -89,12 +92,15 @@ exports.owner_projects = async (req, res) => {
 
 exports.check_access = async (req, res) => {
   try {
-  if (!(req.project.shared || await req.project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
-  let project = await req.project.populate({
-    path: 'owners',
-    select: 'username'
-  })
-  return res.status(200).json(project)
+    if (!(req.project.shared || await req.project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
+    let project = await req.project.populate({
+      path: 'owners',
+      select: 'username'
+    })
+    let meta = await Meta.findById(project.meta)
+    meta.views += 1
+    await meta.save()
+    return res.status(200).json(project)
   } catch (err) {
     return res.status(400).json({ message: err.message })
   }
@@ -103,7 +109,7 @@ exports.check_access = async (req, res) => {
 exports.get_project = async (req,res,next) => {
   try {
   let project
-  project = await Project.findById(req.params._id)
+  project = await Project.findById(req.params._id).populate()
   if(!await project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
   if (project == null) return res.status(404).json({ message: 'Cannot find project ' })
   req.project = project
@@ -174,6 +180,9 @@ exports.copy_project = async (req, res) => {
     })
       // copy of single files inside project
     await newProject.saveBody(req.project)
+    let meta = await Meta.findById(req.project.meta)
+    meta.copied += 1
+    await meta.save()
 
     //add new Project to owners list
     await newProject.addToUser(req.user._id)
@@ -230,6 +239,8 @@ exports.set_shared = async (req, res) => {
   try{
     if (!await req.project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
     await req.project.setShared(req.body.val)
+    const meta = await Meta.create({project: req.project._id});
+    req.project.meta= meta._id; 
     await req.project.upDate()
     await req.project.save()
     return res.status(201).json(res.project);

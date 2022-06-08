@@ -1,9 +1,8 @@
 const mongoose = require('mongoose');
 const { Profile, User } = require('../user/model');
 const File = require('./modelFile');
-const Meta = require('./meta');
+const Meta = require('./meta'); // questo
 
-const opts = { toJSON: { virtuals: true } }
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true }, // to exist a project must have a title
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // to exist must have a project owner
