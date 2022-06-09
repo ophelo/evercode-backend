@@ -7,7 +7,7 @@ const projectRoutes2 = express.Router()
 // create new project
 projectRoutes2.post('/add', getUser, ProjectController.project_create)
 
-projectRoutes2.post('/addFile/:progId', getUser, ProjectController.add_file) 
+projectRoutes2.post('/addFile/:progId', getUser, ProjectController.get_project, ProjectController.add_file) 
 // project by id
 projectRoutes2.get('/:_id', getUser, ProjectController.get_project, ProjectController.check_access) //increment views with check
 

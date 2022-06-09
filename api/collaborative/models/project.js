@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const { Profile } = require('../../user/model');
 const Meta = require('./meta');
+const File = require('./file')
 
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true }, // to exist a project must have a title
@@ -22,6 +23,24 @@ const projectSchema = new mongoose.Schema({
   comments: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Comment' }],
   meta: { type: mongoose.Schema.Types.ObjectId, ref: 'Meta'},
 })
+
+projectSchema.methods.addFile = async function (fileName, code) {
+  const file = await File.create({
+    fileName: fileName,
+    code: code,
+  })
+  this.body.push(file)
+  await this.save()
+  return file
+}
+
+projectSchema.methods.deleteFile = async function (id) {
+  const index = this.body.findIndex((file) => file._id == id)
+  if (index == -1) throw { name: "ValidationError", message: "file does not exist"}
+  this.body.splice(index,1)
+  await File.findByIdAndRemove({_id: id})
+  await this.save()
+}
 
 projectSchema.methods.upDate = async function () {
   this.lastSave = Date.now()

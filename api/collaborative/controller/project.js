@@ -36,17 +36,7 @@ exports.project_delete = async (req, res, next) => {
 
 exports.add_file = async (req, res, next) => {
   try {
-    let proj = await Project.findById(req.params.progId)
-    const check = await proj.checkOwners(req.user._id)
-    if(!check) return res.status(403).json({ message: 'Forbidden' })
-    const file = new File({
-      fileName: req.body.fileName,
-      code: req.body.code,
-      project: req.params.progId
-    })
-    await file.pushFile(req.params.progId)
-    await proj.upDate()
-    await proj.save()
+    const file = await req.project.addFile(req.body.fileName,req.body.code)
     return res.status(201).json(file);
   } catch (err) {
     next(err)
@@ -138,27 +128,21 @@ exports.search = async (req, res, next) => {
   }
 }
 
-exports.get_files = async (req, res) => {
+exports.get_files = async (req, res, next) => {
   try {
-    if (!(req.project.shared || await req.project.checkOwners(req.user._id))) { return res.status(403).json({ message: 'Forbidden' }) }
     const file = await File.find({ _id: { $in: req.project.body } }).populate('fileName', 'code')
     return res.status(200).json(file)
   } catch (err) {
-    console.log(err.name)
-    return res.status(500).json({ message: err.message })
+    next(err)
   }
 }
 
-exports.delete_file = async (req, res) => {
+exports.delete_file = async (req, res, next) => {
   try {
-    // if (res.project.owner.toString() !== user._id.toString()) { return res.status(403).json({ message: 'Forbidden' }) }
-    if (!(await req.project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
-    const file = await File.findById({ _id: req.params.idFile });
-    await file.remove()
-    req.project.save()
-    return res.json({ message: 'Deleted file' })
+    await req.project.deleteFile(req.params.idFile)
+    return res.status(204).json({ message: 'Deleted file' })
   } catch (err) {
-    return res.status(500).json({ message: err.message })
+    next(err)
   }
 }
 

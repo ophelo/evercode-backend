@@ -125,33 +125,12 @@ describe('Testing add file to project API', () => {
 
     req.user = u
     req.body.fileName = "file"
-    req.params.progId = p._id
+    req.project = p
 
     await ProjectController.add_file(req, res, next);
 
     expect(res.status).toHaveBeenCalledWith(201);
     expect(next).not.toHaveBeenCalled();
-  })
-
-  test('Should a forbidden 403 status', async () => {
-    // Setup database
-    prj.owners = []
-    const user = await User.create(reqUser)
-    await Profile.create(profile_user)
-    const project = await Project.create(prj)
-
-    // Instance mock req and  res
-    const req = mockRequest()
-    const res = mockResponse()
-    const next = mockNext()
-
-    req.user = user
-    req.body.fileName = "file"
-    req.params.progId = project._id
-
-    await ProjectController.add_file(req, res, next);
-
-    expect(res.status).toHaveBeenCalledWith(403)
   })
 })
 
@@ -428,3 +407,89 @@ describe('Testing search API', () => {
   })
 })
 
+describe('Testing get_files API', () => {
+  test('Should return 200', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+    await p.addFile("prova", "codice")
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.project = p
+
+    await ProjectController.get_files(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).not.toHaveBeenCalledWith([]);
+    expect(res.json).not.toHaveBeenCalledWith({});
+    expect(next).not.toHaveBeenCalled();
+  })
+
+  test('Should a thorw an error', async () => {
+    // Setup database
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    // no project sent
+    
+    await ProjectController.get_files(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+  })
+})
+
+describe('Testing delete_file API', () => {
+  test('Should return 204', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+    const f = await p.addFile("prova", "codice")
+
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.project = p
+    req.params.idFile = f._id
+
+    await ProjectController.delete_file(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(204);
+    expect(next).not.toHaveBeenCalled();
+  })
+
+  test('Should a thorw an error', async () => {
+    // Setup database
+    const u = await User.create(reqUser)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    // no project sent
+    
+    await ProjectController.delete_file(req, res, next);
+
+    expect(next).toHaveBeenCalled();
+  })
+})
