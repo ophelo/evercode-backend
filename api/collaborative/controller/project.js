@@ -71,51 +71,52 @@ exports.project_list = async (req, res, next) => {
   }
 }
 
-exports.owner_projects = async (req, res) => {
+exports.owner_projects = async (req, res, next) => {
   try {
     const profile = await Profile.findOne({user: req.params.owner})
       .populate({
       path: 'projects',
-      match: { length: {$gte: 0}},
-      select: 'title language description body lastSave',
+      select: 'title language shared owners description body lastSave',
       populate: {
         path: 'body'
     }
     })
+    if(!profile) return res.status(404).json({ error: 'Profile not found' })
     const projects = profile.projects
     if (projects) {
-      
-      projects.forEach(proj => { if(!(proj.shared || proj.checkOwners(req.user._id))) projects.pull(proj) }) // quando lo vedrai deciderai cosa fare con la match, grazie <3
-      return res.status(200).json(projects)
+      return res.status(200).json(projects.filter((proj) => {return proj.shared || proj.checkOwners(req.user._id)} ))
     } else return res.status(404).json({ message: 'NO Projects for you' })
   } catch (err) {
-    return res.status(500).json({ message: err.message })
+    next(err)
   }
 }
 
-exports.check_access = async (req, res) => {
+exports.check_access = async (req, res, next) => {
   try {
-    if (!(req.project.shared || await req.project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
-    let project = await req.project.populate({
-      path: 'owners',
-      select: 'username'
-    })
-    let meta = await Meta.findById(project.meta)
-    meta.views += 1
-    await meta.save()
+    if (!req.project) return res.status(404).json({error: "project not found"})
+    let project = await req.project
+      .populate([
+        {
+          path: 'owners',
+          select: 'username'
+        },
+        {
+          path: 'meta',
+        }
+      ])
+    await project.meta.visualize()
     return res.status(200).json(project)
   } catch (err) {
-    return res.status(400).json({ message: err.message })
+    next(err)
   }
 }
 
-exports.get_project = async (req,res,next) => {
+exports.get_project = async (req, res, next) => {
   try {
-  let project
-  project = await Project.findById(req.params._id).populate()
-  if(!await project.checkOwners(req.user._id)) return res.status(403).json({ message: 'Forbidden' })
-  if (project == null) return res.status(404).json({ message: 'Cannot find project ' })
-  req.project = project
+    const project = await Project.findById(req.params._id)
+    if (project == null) return res.status(404).json({ message: 'Cannot find project ' })
+    if (!(project.shared || await project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
+    req.project = project
   } catch (err) {
     return res.status(400).json({ message: err.message })
   }

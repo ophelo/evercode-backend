@@ -195,3 +195,89 @@ describe('Testing project_list API', () => {
   })
 })
 
+describe('Testing owner_projects API', () => {
+  test('Should return 200', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.params.owner = reqUser._id
+
+    await ProjectController.owner_projects(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).not.toHaveBeenCalledWith([]);
+    expect(res.json).not.toHaveBeenCalledWith({});
+    expect(next).not.toHaveBeenCalled();
+  })
+
+  test('Should a forbidden 404 status profile not found', async () => {
+    // Setup database
+    const u = await User.create(reqUser)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    
+    await ProjectController.owner_projects(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404)
+  })
+})
+
+describe('Testing check_access API', () => {
+  test('Should return 200', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.project = p
+
+    await ProjectController.check_access(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).not.toHaveBeenCalledWith([]);
+    expect(res.json).not.toHaveBeenCalledWith({});
+    expect(next).not.toHaveBeenCalled();
+  })
+
+  test('Should a thorw an error', async () => {
+    // Setup database
+    const u = await User.create(reqUser)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    // no project sent
+    
+    await ProjectController.check_access(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+  })
+})
+

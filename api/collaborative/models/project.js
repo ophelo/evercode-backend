@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { Profile } = require('../../user/model');
+const Meta = require('./meta');
 
 const projectSchema = new mongoose.Schema({
   title: { type: String, required: true, unique: true }, // to exist a project must have a title
@@ -39,7 +40,7 @@ projectSchema.methods.saveBody = async function (req) {
 }
 
 projectSchema.methods.addToUser = async function (_id) {
-  await Profile.updateOne({owner: _id},{ $addToSet: { projects: this._id } })
+  await Profile.findOneAndUpdate({ user: _id},{ $addToSet: { projects: this._id } })
   await this.owners.push(_id)
   await this.save()
 }
@@ -59,7 +60,7 @@ projectSchema.methods.setShared = async function (val) {
 
 projectSchema.methods.checkOwners = async function (_id) {
   if (_id == 'undefined') return false
-  return this.owners.findIndex((user) => {return user._id.toString() === _id.toString()}) !== -1
+  return this.owners?.findIndex((user) => {return user._id.toString() === _id.toString()}) !== -1
 }
 
 projectSchema.methods.checkOwner = async function (_id) {
@@ -72,6 +73,14 @@ function descriptionValidator (val) {
   // validator check if description is too big
   return val.length < 250
 }
+
+projectSchema.pre('save', async function(next) {
+  if (!this.meta) {
+    const m = await Meta.create({project: this._id})
+    this.meta = m._id
+  }
+  next();
+})
 
 projectSchema.pre('remove', async function(next) {
   await Profile.updateMany({user: { $in: this.owners }},{

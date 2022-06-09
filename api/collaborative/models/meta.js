@@ -12,6 +12,11 @@ const metaSchema = new mongoose.Schema({
 
 metaSchema.virtual('Votes').get(function(){ return this.upVote - this.downVote})
 
+metaSchema.methods.visualize = async function() {
+    this.views += 1
+    await this.save()
+}
+
 metaSchema.methods.updateMeta = async function(val){
 switch(val){
     case 'UpVote': 
