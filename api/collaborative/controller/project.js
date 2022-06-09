@@ -2,7 +2,7 @@ const Project = require('../models/project')
 const  File = require('../models/file')
 const  Meta = require('../models/meta')
 const { Profile } = require('../../user/model')
-const escapeStringRegexp = import('escape-string-regexp')
+const { escapeRegex } = require('../../../util/regex')
 
 exports.project_create = async (req, res, next) => {
   try {
@@ -118,32 +118,23 @@ exports.get_project = async (req, res, next) => {
     if (!(project.shared || await project.checkOwners(req.user._id))) return res.status(403).json({ message: 'Forbidden' })
     req.project = project
   } catch (err) {
-    return res.status(400).json({ message: err.message })
+    return res.status(500).json({ message: "Internal error" })
   }
   next()
 }
 
-exports.search = async (req, res) => {
+exports.search = async (req, res, next) => {
   try {
     let projects
-    if (req.body.keyWord) {
-      const $regex = escapeStringRegexp(req.body.keyWord)
-      projects = await Project.find({
-        shared: true,
-        $or: [
-          { title: { $regex, $options: 'i' } },
-          { email: { $regex, $options: 'i' } }
-        ]
-      })
-    } else {
-      projects = await Project.find({ shared: true })
-    }
-    if (!projects) {
-      return res.status(404).json({ message: 'no public project' })
-    }
+    if (!req.body.keyWord) return res.status(400).json({error: "missing keyword"})
+    const reg = escapeRegex(req.body.keyWord)
+    projects = await Project.find({
+      shared: true,
+      title: { $regex: reg, $options: 'i' }
+    })
     return res.status(200).json(projects)
   } catch (err) {
-    res.status(500).json({ message: err.message })
+    next(err)
   }
 }
 

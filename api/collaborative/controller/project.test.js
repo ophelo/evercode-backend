@@ -281,3 +281,150 @@ describe('Testing check_access API', () => {
   })
 })
 
+describe('Testing get_project middleware', () => {
+  test('Should set a project in the request obj', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.params._id = p._id
+
+    await ProjectController.get_project(req, res, next);
+
+    expect(res.project).not.toBe(null);
+    expect(next).toHaveBeenCalled();
+  })
+
+  test('Should return a 404 error code', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+
+    await ProjectController.get_project(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(404);
+    expect(next).not.toHaveBeenCalled();
+  })
+})
+
+describe('Testing search API', () => {
+  test('Should return a project with a perfect match', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.project = p
+    req.body.keyWord = 'prova'
+
+    await ProjectController.search(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).not.toHaveBeenCalledWith([]);
+    expect(next).not.toHaveBeenCalled();
+  })
+
+  test('Should return the projects that contains a partial string sent', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.project = p
+    req.body.keyWord = 'pro'
+
+    await ProjectController.search(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).not.toHaveBeenCalledWith([]);
+    expect(next).not.toHaveBeenCalled();
+  })
+
+  test('Should return nothing', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.project = p
+    req.body.keyWord = 'ddd'
+
+    await ProjectController.search(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(200);
+    expect(res.json).toHaveBeenCalledWith([]);
+    expect(next).not.toHaveBeenCalled();
+  })
+
+  test('Should return an error', async () => {
+    // Setup database
+    const project = prj;
+    project.shared = true
+    const u = await User.create(reqUser)
+    await Profile.create(profile_user)
+    const p = await Project.create(project)
+    await p.addToUser(u._id)
+
+    // Instance mock req and  res
+    const req = mockRequest()
+    const res = mockResponse()
+    const next = mockNext()
+
+    req.user = u
+    req.project = p
+
+    await ProjectController.search(req, res, next);
+
+    expect(res.status).toHaveBeenCalledWith(400);
+    expect(next).not.toHaveBeenCalled();
+  })
+})
+
